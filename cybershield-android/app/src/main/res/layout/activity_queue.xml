@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Priority queue"
+        android:textColor="@color/text"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/muted"
+        android:textSize="13sp"
+        android:text="Recent analyses" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:scrollbars="none">
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+            <com.google.android.material.chip.Chip android:id="@+id/fAll" style="@style/Widget.Material3.Chip.Filter" android:text="All" android:checked="true" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <com.google.android.material.chip.Chip android:id="@+id/fMal" style="@style/Widget.Material3.Chip.Filter" android:text="Malicious" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <com.google.android.material.chip.Chip android:id="@+id/fHigh" style="@style/Widget.Material3.Chip.Filter" android:text="High risk" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <com.google.android.material.chip.Chip android:id="@+id/fSus" style="@style/Widget.Material3.Chip.Filter" android:text="Suspicious" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <com.google.android.material.chip.Chip android:id="@+id/fSafe" style="@style/Widget.Material3.Chip.Filter" android:text="Safe" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@color/muted"
+        android:text="Loading…" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

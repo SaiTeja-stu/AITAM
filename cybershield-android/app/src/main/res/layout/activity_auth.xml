@@ -98,5 +98,16 @@
             android:layout_height="wrap_content"
             android:text="Forgot password?" />
 
+        <TextView
+            android:id="@+id/serverInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textColor="@color/muted"
+            android:textSize="12sp"
+            android:text="Server: (default)" />
+
     </LinearLayout>
 </ScrollView>

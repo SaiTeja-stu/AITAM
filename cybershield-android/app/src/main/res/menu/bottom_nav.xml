@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_home"    android:icon="@drawable/ic_home" android:title="Home" />
+    <item android:id="@+id/nav_analyze" android:icon="@drawable/ic_scan" android:title="Analyze" />
+    <item android:id="@+id/nav_queue"   android:icon="@drawable/ic_list" android:title="Queue" />
+    <item android:id="@+id/nav_reports" android:icon="@drawable/ic_flag" android:title="Reports" />
+    <item android:id="@+id/nav_learn"   android:icon="@drawable/ic_book" android:title="Learn" />
+</menu>

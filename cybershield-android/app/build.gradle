@@ -13,12 +13,12 @@ android {
         versionCode 1
         versionName "0.1.0"
 
-        // Backend base URL.
-        //  - emulator OR USB-connected phone: run `adb reverse tcp:8899 tcp:8899`
-        //    once, then 127.0.0.1 tunnels to your PC's localhost:8899 over the cable.
-        //  - phone on the same Wi-Fi without a cable: set this to your PC's LAN IP,
-        //    e.g. "http://192.168.1.20:8899/".
-        buildConfigField "String", "API_BASE_URL", "\"http://127.0.0.1:8899/\""
+        // Default backend URL. Overridable in-app (Auth screen -> "Server" line).
+        //  - phone on same Wi-Fi : your PC's LAN IP, e.g. http://10.10.84.80:8899/
+        //  - emulator            : http://10.0.2.2:8899/
+        //  - USB (adb reverse)   : http://127.0.0.1:8899/
+        buildConfigField "String", "API_BASE_URL",
+                "\"" + (project.findProperty("apiBaseUrl") ?: "http://10.10.84.80:8899/") + "\""
     }
 
     buildFeatures {

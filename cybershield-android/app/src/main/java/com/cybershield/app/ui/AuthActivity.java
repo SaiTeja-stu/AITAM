@@ -2,12 +2,15 @@ package com.cybershield.app.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.cybershield.app.CyberShieldApp;
 import com.cybershield.app.data.AuthRepository;
+import com.cybershield.app.data.SecureStore;
 import com.cybershield.app.databinding.ActivityAuthBinding;
 
 /**
@@ -39,6 +42,9 @@ public class AuthActivity extends AppCompatActivity {
                 setMode(Mode.FORGOT);
             }
         });
+
+        b.serverInfo.setOnClickListener(v -> editServerUrl());
+        updateServerInfo();
 
         // Password-reset deep link from the email: cybershield://reset?email=..&code=..
         android.net.Uri data = getIntent() == null ? null : getIntent().getData();
@@ -167,4 +173,34 @@ public class AuthActivity extends AppCompatActivity {
         CharSequence c = e.getText();
         return c == null ? "" : c.toString().trim();
     }
+
+    // ---- backend URL setting (so no rebuild needed per network) ----
+
+    private void updateServerInfo() {
+        b.serverInfo.setText("Server: " + CyberShieldApp.get().api().store().baseUrl() + "  (tap to change)");
+    }
+
+    private void editServerUrl() {
+        SecureStore store = CyberShieldApp.get().api().store();
+        EditText input = new EditText(this);
+        input.setHint("http://192.168.x.x:8899");
+        input.setText(store.baseUrl());
+
+        new AlertDialog.Builder(this)
+                .setTitle("Backend server URL")
+                .setMessage("Your PC's address on the same Wi-Fi, e.g. http://10.10.84.80:8899\n"
+                        + "Emulator: http://10.0.2.2:8899\nUSB (adb reverse): http://127.0.0.1:8899")
+                .setView(input)
+                .setPositiveButton("Save", (d, w) -> {
+                    store.setBaseUrl(input.getText().toString());
+                    updateServerInfo();
+                })
+                .setNeutralButton("Reset", (d, w) -> {
+                    store.setBaseUrl(null);
+                    updateServerInfo();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 }
+

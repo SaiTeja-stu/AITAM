@@ -33,4 +33,25 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">14dp</item>
     </style>
+
+    <style name="DashCard" parent="Widget.Material3.CardView.Filled">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="cardBackgroundColor">@color/panel</item>
+        <item name="strokeColor">@color/edge</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">12dp</item>
+    </style>
+
+    <style name="DashHeading">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
 </resources>

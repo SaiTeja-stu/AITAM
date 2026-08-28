@@ -17,8 +17,8 @@ out/
 # Databases & Runtime Data
 *.db
 *.db-journal
-data/
-archive/
+/data/
+/archive/
 
 # IDE & OS
 .idea/

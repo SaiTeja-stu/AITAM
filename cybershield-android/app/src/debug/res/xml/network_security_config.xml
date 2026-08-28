@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG builds only (src/debug). Permits plain HTTP to any host so the app can
+  reach a dev backend on the PC's LAN IP, emulator (10.0.2.2) or adb-reverse
+  (127.0.0.1) without per-network config. The release build uses the strict
+  config in src/main which requires HTTPS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

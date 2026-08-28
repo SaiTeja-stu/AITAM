@@ -52,6 +52,11 @@
         <activity android:name=".ui.VerdictActivity" android:exported="false" />
         <activity android:name=".ui.HistoryActivity" android:exported="false" />
         <activity android:name=".ui.OnboardingActivity" android:exported="false" />
+        <activity android:name=".ui.EduDetailActivity" android:exported="false" />
+        <activity android:name=".ui.AnalyzeConsoleActivity" android:exported="false" />
+        <activity android:name=".ui.QueueActivity" android:exported="false" />
+        <activity android:name=".ui.ReportsActivity" android:exported="false" />
+        <activity android:name=".ui.EducationListActivity" android:exported="false" />
 
         <!-- Receives text shared from ANY app (WhatsApp, SMS, browsers, social) -->
         <activity
