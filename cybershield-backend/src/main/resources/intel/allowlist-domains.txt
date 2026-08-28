@@ -1,0 +1,31 @@
+# Curated known-good domains. Presence grants a trust offset and, when nothing
+# negative fires, the "Trusted" wording. Keep this list conservative.
+google.com
+www.google.com
+accounts.google.com
+youtube.com
+facebook.com
+instagram.com
+whatsapp.com
+paypal.com
+amazon.com
+amazon.in
+flipkart.com
+netflix.com
+microsoft.com
+apple.com
+paytm.com
+phonepe.com
+sbi.co.in
+onlinesbi.sbi
+hdfcbank.com
+icicibank.com
+axisbank.com
+irctc.co.in
+epfindia.gov.in
+uidai.gov.in
+incometax.gov.in
+rbi.org.in
+linkedin.com
+github.com
+wikipedia.org

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <property name="ARCHIVE_DIR" value="${CYBERSHIELD_ARCHIVE_DIR:-./data/archive}"/>
+
+    <!-- Tier-2 cold store: rotating, gzipped JSONL of every analysis decision. -->
+    <appender name="SCAN_ARCHIVE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${ARCHIVE_DIR}/scans-current.jsonl</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${ARCHIVE_DIR}/scans-%d{yyyy-MM-dd}.%i.jsonl.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Security events: kept separate for audit. -->
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${ARCHIVE_DIR}/security.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${ARCHIVE_DIR}/security-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>180</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{ISO8601} %-5level %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="SCAN_ARCHIVE" level="INFO" additivity="false">
+        <appender-ref ref="SCAN_ARCHIVE"/>
+    </logger>
+
+    <logger name="SECURITY" level="INFO" additivity="true">
+        <appender-ref ref="SECURITY_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

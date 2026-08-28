@@ -1,0 +1,11 @@
+# Seed blocklist of known-bad domains. In production this is replaced/augmented
+# by live feeds (Google Safe Browsing, PhishTank, OpenPhish, URLhaus) and by
+# confirmed community reports. Sample entries for demo:
+paypa1-verify.com
+secure-paytm-kyc.com
+sbi-netbanking-update.in
+account-verify-amazon.top
+free-recharge-jio.xyz
+irctc-refund-portal.online
+update-kyc-hdfc.info
+lucky-draw-flipkart.club

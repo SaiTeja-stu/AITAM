@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cyber Shield</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        width: 360px; margin: 0; padding: 14px;
+        font: 13px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+        background: #0b1020; color: #e7ecf5;
+      }
+      h1 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+      .logo { width: 20px; height: 20px; background: #38bdf8; border-radius: 5px;
+              display: grid; place-items: center; color: #0b1020; font-weight: 700; font-size: 11px; }
+      .muted { color: #93a0bc; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .badge { padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+      .score { font-size: 30px; font-weight: 700; }
+      .card { background: #131a2e; border: 1px solid #243050; border-radius: 8px; padding: 10px; margin-top: 10px; }
+      .sig { border-top: 1px solid #243050; padding: 6px 0; }
+      .sig:first-child { border-top: 0; }
+      .sig .name { font-weight: 600; }
+      .sig .detail { color: #93a0bc; }
+      .sev { font-size: 10px; font-weight: 700; letter-spacing: .04em; }
+      ul { margin: 6px 0 0; padding-left: 18px; }
+      button {
+        font: inherit; border: 1px solid #243050; background: #1b2540; color: #e7ecf5;
+        border-radius: 7px; padding: 7px 10px; cursor: pointer;
+      }
+      button.primary { background: #38bdf8; color: #0b1020; border-color: #38bdf8; font-weight: 600; }
+      button:disabled { opacity: .5; cursor: default; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      a { color: #7dd3fc; }
+      .hidden { display: none; }
+      .spin { width: 14px; height: 14px; border: 2px solid #243050; border-top-color: #38bdf8;
+              border-radius: 50%; animation: s .8s linear infinite; display: inline-block; }
+      @keyframes s { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <h1><span class="logo">CS</span> Cyber Shield</h1>
+
+    <div id="needLogin" class="card hidden">
+      <p>You're not signed in.</p>
+      <button id="toOptions" class="primary">Open settings to sign in</button>
+    </div>
+
+    <div id="loading" class="row muted"><span class="spin"></span>&nbsp; Checking this page…</div>
+
+    <div id="result" class="hidden">
+      <div class="row">
+        <span id="badge" class="badge"></span>
+        <span id="wording" class="muted"></span>
+      </div>
+      <div class="row" style="margin-top:6px; align-items:baseline; gap:10px;">
+        <span id="score" class="score"></span>
+        <span id="meta" class="muted"></span>
+      </div>
+
+      <div id="paymentCard" class="card hidden">
+        <strong>Payment</strong>
+        <div id="paymentBody" class="muted"></div>
+      </div>
+
+      <div id="explanation" class="card"></div>
+
+      <div class="card">
+        <strong>Why</strong>
+        <div id="signals"></div>
+      </div>
+
+      <div class="card">
+        <strong>What to do</strong>
+        <ul id="recs"></ul>
+      </div>
+    </div>
+
+    <div id="error" class="card hidden" style="border-color:#7f1d1d;"></div>
+
+    <div class="actions">
+      <button id="recheck">Re-check page</button>
+      <button id="scanSelection" class="hidden">Check selected text</button>
+      <button id="report" class="hidden">Report as scam</button>
+      <button id="dashboard">Dashboard</button>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+bin/
+out/
+
+# Gradle
+.gradle/
+*.zip
+*.tar.gz
+!gradle-wrapper.jar
+
+# Databases & Runtime Data
+*.db
+*.db-journal
+data/
+archive/
+
+# IDE & OS
+.idea/
+.vscode/
+*.suo
+*.user
+.DS_Store
+Thumbs.db

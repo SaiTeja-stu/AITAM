@@ -1,0 +1,118 @@
+spring:
+  application:
+    name: cybershield-backend
+
+  datasource:
+    url: jdbc:sqlite:${CYBERSHIELD_DB_PATH:./data/cybershield.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1        # SQLite is single-writer
+      connection-timeout: 10000
+      pool-name: sqlite-hot
+
+  jpa:
+    hibernate:
+      ddl-auto: update            # hackathon: Hibernate owns schema. Swap for Flyway in prod.
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+        connection:
+          provider_disables_autocommit: false
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-exception: false
+  server-header: ""
+  tomcat:
+    max-http-form-post-size: 256KB
+    max-swallow-size: 6MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    com.cybershield: INFO
+    org.hibernate.SQL: WARN
+
+cybershield:
+  jwt:
+    secret: ${CYBERSHIELD_JWT_SECRET:}        # >=32 chars in production
+    ttl-seconds: 900
+  hmac-secret: ${CYBERSHIELD_HMAC_SECRET:dev-only-insecure-salt-change-me}
+  app-name: Cyber Shield
+  admin:
+    username: ${CYBERSHIELD_ADMIN_USER:}
+    password: ${CYBERSHIELD_ADMIN_PASSWORD:}
+    email: ${CYBERSHIELD_ADMIN_EMAIL:}
+  auth:
+    max-attempts: 5
+    window-minutes: 15
+    lock-minutes: 15
+    require-email-verification: ${CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION:true}
+    unverified-grace-hours: 48
+    reset-url: ${CYBERSHIELD_RESET_URL:}     # e.g. http://localhost:5173/reset
+    cleanup-cron: "0 15 * * * *"
+  otp:
+    ttl-minutes: 15
+    max-attempts: 5
+    max-per-hour: 5
+  mail:
+    enabled: ${CYBERSHIELD_MAIL_ENABLED:true}
+    from: ${MAIL_FROM:${SMTP_USERNAME:no-reply@cybershield.local}}
+    threat-alerts: true
+    threat-alert-min-gap-minutes: 10
+  fetch:
+    enabled: ${CYBERSHIELD_FETCH_ENABLED:true} # SSRF-guarded outbound page fetch
+  upload:
+    max-bytes: 5242880
+  hot-retention-days: 30
+  prune-cron: "0 30 3 * * *"
+  ratelimit:
+    analyze-per-min: 60
+    auth-per-15min: 10
+  feeds:
+    enabled: ${CYBERSHIELD_FEEDS_ENABLED:true}  # live reputation lookups (need API keys below)
+  llm:
+    enabled: ${CYBERSHIELD_LLM_ENABLED:true}    # Claude explanation rewrite (needs ANTHROPIC_API_KEY)
+    model: ${CYBERSHIELD_LLM_MODEL:claude-haiku-4-5-20251001}
+# Optional external service keys are read straight from the environment:
+#   GOOGLE_SAFE_BROWSING_KEY, URLHAUS_AUTH_KEY, ANTHROPIC_API_KEY
+# The platform runs fully without them (local seed lists + deterministic explanations).

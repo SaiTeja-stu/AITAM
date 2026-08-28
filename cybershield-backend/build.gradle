@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.cybershield'
+version = '0.1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    zxingVersion = '3.5.3'
+}
+
+dependencies {
+    // Web + validation
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // DB: SQLite (hot tier)
+    implementation 'org.xerial:sqlite-jdbc:3.46.1.3'
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.5.3.Final'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // Rate limiting
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.14.0'
+
+    // QR decode / generate
+    implementation "com.google.zxing:core:${zxingVersion}"
+    implementation "com.google.zxing:javase:${zxingVersion}"
+
+    // HTML parsing (web-page analysis)
+    implementation 'org.jsoup:jsoup:1.18.1'
+
+    // File type detection (upload hardening)
+    implementation 'org.apache.tika:tika-core:2.9.2'
+
+    // String distance (typosquatting)
+    implementation 'org.apache.commons:commons-text:1.12.0'
+
+    // OpenAPI docs
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+
+    // JSON structured logging for the cold-tier rotating log
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    // Byte Buddy (via Mockito) doesn't officially know JDK 24 yet; enable experimental support.
+    systemProperty 'net.bytebuddy.experimental', 'true'
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}

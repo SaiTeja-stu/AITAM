@@ -1,0 +1,14 @@
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/*.zip
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+*.log
+.idea/
+*.iml
+.vscode/

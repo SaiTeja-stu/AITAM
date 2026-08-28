@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="System-wide protection"
+            android:textColor="@color/text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="These permissions let Cyber Shield warn you on payment and QR screens in OTHER apps. It reads only the payee and amount on those screens, checks them on your device, and uploads nothing. You can turn any of this off at any time."
+            android:textColor="@color/muted" />
+
+        <TextView android:id="@+id/stSms" style="@style/OnbStep" android:text="1 · Allow reading SMS (scan incoming texts)" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnSms" style="@style/OnbBtn" android:text="Grant SMS access" />
+
+        <TextView android:id="@+id/stOverlay" style="@style/OnbStep" android:text="2 · Allow drawing over other apps (the warning banner)" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnOverlay" style="@style/OnbBtn" android:text="Open overlay setting" />
+
+        <TextView android:id="@+id/stAccessibility" style="@style/OnbStep" android:text="3 · Turn on the Cyber Shield accessibility service (payment-screen watch)" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnAccessibility" style="@style/OnbBtn" android:text="Open accessibility setting" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swBiometric"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:checked="true"
+            android:text="Require fingerprint / face unlock to open the app"
+            android:textColor="@color/text" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Note: on Android 13+ you may first need to allow 'Restricted settings' for this app from its App info screen."
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagReportViewIds"
+    android:canRetrieveWindowContent="true"
+    android:notificationTimeout="200"
+    android:description="@string/shield_service_description"
+    android:summary="@string/shield_service_description"
+    android:packageNames="com.google.android.apps.nbu.paisa.user,com.phonepe.app,net.one97.paytm,in.org.npci.upiapp,com.google.android.gms,com.whatsapp,com.axis.mobile,com.sbi.lotusintouch,com.snapwork.hdfc,com.csam.icici.bank.imobile,com.bankofbaroda.upi,com.amazon.mShop.android.shopping,com.freecharge.android,com.mobikwik_new" />

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="Checking…"
+            android:textColor="@color/ink"
+            android:textStyle="bold"
+            android:background="@color/muted" />
+
+        <TextView
+            android:id="@+id/score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/text"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:text="—" />
+
+        <TextView
+            android:id="@+id/wording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/muted"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/paymentWarn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:background="@color/panel"
+            android:textColor="@color/risk_malicious"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:text="Scanning a QR never credits your account. If you were told to scan this to RECEIVE money or a refund, it is a scam." />
+
+        <LinearLayout
+            android:id="@+id/paymentBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:background="@color/panel"
+            android:visibility="gone">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Payment details" android:textColor="@color/muted" android:textStyle="bold" />
+            <TextView android:id="@+id/payPayee" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:textColor="@color/text" android:layout_marginTop="4dp" />
+            <TextView android:id="@+id/payAmount" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:textColor="@color/text" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/explanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/text"
+            android:text="" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Why"
+            android:textColor="@color/muted"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/signals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:nestedScrollingEnabled="false" />
+
+        <TextView
+            android:id="@+id/recsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="What to do"
+            android:textColor="@color/muted"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/recs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text"
+            android:text="" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReport"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Report this as a scam" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDone"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Done" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

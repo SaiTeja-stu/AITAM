@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    url: "jdbc:sqlite:file:cybershield-test-${random.uuid}?mode=memory&cache=shared"
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+  mail:
+    host: localhost
+    port: 3025
+
+cybershield:
+  jwt:
+    secret: "test-secret-that-is-definitely-long-enough-32+"
+    ttl-seconds: 2
+  hmac-secret: "test-hmac-secret"
+  admin:
+    username: admin
+    password: admin-password-123456
+    email: admin@cybershield.test
+  mail:
+    enabled: false                       # never touch SMTP in tests
+  auth:
+    require-email-verification: false    # most tests register + log in directly
+    max-attempts: 3
+    ip-factor: 50
+    window-minutes: 15
+    lock-minutes: 15
+  fetch:
+    enabled: false
+  feeds:
+    enabled: false
+  llm:
+    enabled: false
+  ratelimit:
+    analyze-per-min: 100000
+    auth-per-15min: 100000
+
+logging:
+  level:
+    root: WARN
+    com.cybershield: INFO

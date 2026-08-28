@@ -1,0 +1,13 @@
+<resources>
+    <color name="ink">#0B1020</color>
+    <color name="panel">#131A2E</color>
+    <color name="edge">#243050</color>
+    <color name="text">#E7ECF5</color>
+    <color name="muted">#93A0BC</color>
+    <color name="sky">#38BDF8</color>
+
+    <color name="risk_safe">#34D399</color>
+    <color name="risk_suspicious">#FDE047</color>
+    <color name="risk_high">#FB923C</color>
+    <color name="risk_malicious">#F87171</color>
+</resources>

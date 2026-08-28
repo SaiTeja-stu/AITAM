@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Cyber Shield</string>
+    <string name="shield_service_label">Cyber Shield — payment protection</string>
+    <string name="shield_service_description">Watches payment and QR screens in other apps and warns you before you send money to a suspicious recipient. Reads only the payee and amount on those screens; the risk check runs on your device.</string>
+
+    <string name="scan_qr">Scan a QR code</string>
+    <string name="paste_check">Check a message or link</string>
+    <string name="history">History</string>
+    <string name="enable_protection">Enable system-wide protection</string>
+
+    <string name="analyzing">Checking…</string>
+    <string name="could_not_read_qr">No QR code found. Try again, holding the phone steady.</string>
+    <string name="offline_notice">No connection — showing on-device check only.</string>
+</resources>
