@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Shield, Lock, User, KeyRound, AlertOctagon, CheckCircle2 } from 'lucide-react';
+import { Lock, User, KeyRound, AlertOctagon, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../auth.jsx';
 import { api } from '../api.js';
 import { Spinner } from '../components/ui.jsx';
+import SpecularButton from '../components/SpecularButton.jsx';
+import logoImg from '../assets/logo.jpg';
 
 export default function Login() {
   const { login, error } = useAuth();
@@ -40,10 +42,8 @@ export default function Login() {
       >
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyber-accent to-cyber-indigo p-0.5 shadow-cyber-glow">
-            <div className="flex h-full w-full items-center justify-center rounded-[14px] bg-cyber-dark">
-              <Shield className="h-7 w-7 text-cyber-accent" />
-            </div>
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyber-accent to-cyber-indigo p-0.5 shadow-cyber-glow overflow-hidden">
+            <img src={logoImg} alt="Cyber Shield Admin" className="h-full w-full object-cover rounded-[14px]" />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white">CYBER SHIELD SOC</h1>
@@ -104,13 +104,19 @@ export default function Login() {
         )}
 
         {/* Action Button */}
-        <button
+        <SpecularButton
+          type="submit"
           disabled={busy}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyber-accent to-cyber-indigo py-3 text-sm font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-cyber-glow"
+          size="lg"
+          lineColor="#38bdf8"
+          baseColor="#0369a1"
+          textColor="#0284c7"
+          radius={14}
+          className="w-full font-bold shadow-cyber-glow"
         >
-          {busy ? <Spinner className="h-4 w-4 text-slate-950" /> : <KeyRound className="h-4 w-4 text-slate-950" />}
-          <span>{forgot ? 'Send Password Reset Code' : 'Authenticate Console'}</span>
-        </button>
+          {busy ? <Spinner className="h-4 w-4 text-cyan-400" /> : <KeyRound className="h-4 w-4 text-cyan-400" />}
+          <span className="text-white">{forgot ? 'Send Password Reset Code' : 'Authenticate Console'}</span>
+        </SpecularButton>
 
         <button
           type="button"

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { ShieldAlert, CheckCircle, XCircle, AlertOctagon, RefreshCw, FileText } from 'lucide-react';
 import { api } from '../api.js';
 import { Spinner } from '../components/ui.jsx';
+import SpecularButton from '../components/SpecularButton.jsx';
 
 const TABS = [
   { id: 'PENDING', label: 'Pending Moderation' },
@@ -49,12 +50,15 @@ export default function Reports() {
             Review user-submitted phishing reports. Confirming a report automatically pushes indicators to the live community blocklist.
           </p>
         </div>
-        <button
+        <SpecularButton
           onClick={load}
-          className="flex items-center gap-2 rounded-xl border border-cyber-border bg-cyber-card/80 px-4 py-2 text-xs font-semibold text-slate-200 transition-all hover:border-cyber-accent hover:bg-cyber-border/40 shadow-cyber-glow"
+          size="sm"
+          lineColor="#38bdf8"
+          baseColor="#1e293b"
+          radius={12}
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh Reports
-        </button>
+        </SpecularButton>
       </div>
 
       {/* Tabs Toolbar */}
@@ -148,22 +152,28 @@ export default function Reports() {
               {/* Action Buttons for Pending items */}
               {isPending && (
                 <div className="pt-2 flex items-center gap-3">
-                  <button
+                  <SpecularButton
                     onClick={() => act(r.id, 'confirm')}
                     disabled={busyId === r.id}
-                    className="flex items-center gap-2 rounded-xl bg-red-500/20 border border-red-500/40 px-4 py-2 text-xs font-bold text-red-300 transition-all hover:bg-red-500/30 hover:border-red-500/60 disabled:opacity-50 shadow-rose-glow"
+                    size="sm"
+                    lineColor="#f87171"
+                    baseColor="#7f1d1d"
+                    radius={12}
                   >
-                    {busyId === r.id ? <Spinner className="h-3.5 w-3.5 text-red-300" /> : <CheckCircle className="h-4 w-4" />}
-                    Confirm Threat & Block
-                  </button>
-                  <button
+                    {busyId === r.id ? <Spinner className="h-3.5 w-3.5 text-red-300" /> : <CheckCircle className="h-4 w-4 text-red-400" />}
+                    <span className="text-red-300 font-bold">Confirm Threat & Block</span>
+                  </SpecularButton>
+                  <SpecularButton
                     onClick={() => act(r.id, 'reject')}
                     disabled={busyId === r.id}
-                    className="flex items-center gap-2 rounded-xl border border-cyber-border bg-cyber-dark px-4 py-2 text-xs font-bold text-slate-300 transition-all hover:border-slate-500 hover:bg-cyber-border/40 disabled:opacity-50"
+                    size="sm"
+                    lineColor="#94a3b8"
+                    baseColor="#1e293b"
+                    radius={12}
                   >
-                    {busyId === r.id ? <Spinner className="h-3.5 w-3.5" /> : <XCircle className="h-4 w-4" />}
-                    Reject Report
-                  </button>
+                    {busyId === r.id ? <Spinner className="h-3.5 w-3.5" /> : <XCircle className="h-4 w-4 text-slate-400" />}
+                    <span className="text-slate-300">Reject Report</span>
+                  </SpecularButton>
                 </div>
               )}
             </div>

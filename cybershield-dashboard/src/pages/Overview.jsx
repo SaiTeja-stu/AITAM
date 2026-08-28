@@ -1,7 +1,26 @@
 import { useEffect, useState } from 'react';
-import { ShieldAlert, Activity, FileText, AlertOctagon, TrendingUp, Layers, Cpu } from 'lucide-react';
+import { ShieldAlert, Activity, FileText, AlertOctagon, TrendingUp, Layers } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { api } from '../api.js';
 import { Card, StatWidget, BarList, Spinner, LEVEL_META } from '../components/ui.jsx';
+
+const PIE_COLORS = ['#38bdf8', '#818cf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa'];
+
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="rounded-xl border border-cyber-border bg-slate-950/95 p-3 text-xs shadow-2xl backdrop-blur-xl">
+        <div className="flex items-center gap-2 font-bold text-slate-100">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: data.color || data.payload.fill }} />
+          <span>{data.name}</span>
+        </div>
+        <div className="mt-1 font-mono font-semibold text-cyber-accent">Count: {data.value}</div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Overview() {
   const [stats, setStats] = useState(null);
@@ -44,6 +63,20 @@ export default function Overview() {
   const perDay = Object.entries(trends.perDay || {}).map(([label, count]) => ({ label, count }));
   const perType = Object.entries(stats.scansByContentType || {}).map(([label, count]) => ({ label, count }));
 
+  // Pie chart formatted data
+  const riskPieData = [
+    { name: 'Malicious', value: lvl.MALICIOUS || 0, fill: '#f43f5e' },
+    { name: 'High Risk', value: lvl.HIGH_RISK || 0, fill: '#f97316' },
+    { name: 'Suspicious', value: lvl.SUSPICIOUS || 0, fill: '#eab308' },
+    { name: 'Clean / Safe', value: lvl.SAFE || 0, fill: '#10b981' },
+  ].filter(d => d.value > 0);
+
+  const typePieData = perType.map((item, idx) => ({
+    name: item.label,
+    value: item.count,
+    fill: PIE_COLORS[idx % PIE_COLORS.length],
+  }));
+
   return (
     <div className="space-y-8">
       {/* Top Welcome & Quick Header */}
@@ -53,10 +86,6 @@ export default function Overview() {
           <p className="mt-1 text-xs text-slate-400">
             Real-time threat metrics, cold archive signals, and community report activity.
           </p>
-        </div>
-        <div className="flex items-center gap-2 rounded-xl border border-cyber-border bg-cyber-card/60 px-3.5 py-2 text-xs font-mono text-slate-300">
-          <Cpu className="h-4 w-4 text-cyber-accent" />
-          <span>Hot DB Engine Active</span>
         </div>
       </div>
 
@@ -91,43 +120,67 @@ export default function Overview() {
         />
       </div>
 
-      {/* Analytics Grid Row 1 */}
+      {/* Analytics Grid Row 1: Interactive Pie Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Risk Classification Breakdown" icon={ShieldAlert}>
-          <div className="space-y-3 pt-2">
-            {['MALICIOUS', 'HIGH_RISK', 'SUSPICIOUS', 'SAFE'].map((k) => {
-              const total = Object.values(lvl).reduce((a, b) => a + b, 0) || 1;
-              const v = lvl[k] || 0;
-              const m = LEVEL_META[k];
-              const pct = Math.round((v / total) * 100);
-              return (
-                <div key={k} className="group rounded-xl border border-cyber-border/40 bg-cyber-dark/40 p-3">
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${m.dotCls}`} />
-                      <span className="font-mono text-slate-400 text-[11px]">{m.priority}</span>
-                      <span className="font-semibold text-slate-200">{m.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-slate-400">{pct}%</span>
-                      <span className="font-mono font-bold text-slate-200">{v}</span>
-                    </div>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-cyber-border/60">
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${m.barCls}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={riskPieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={90}
+                  paddingAngle={4}
+                  dataKey="value"
+                  nameKey="name"
+                  stroke="none"
+                  isAnimationActive={true}
+                >
+                  {riskPieData.map((entry, index) => (
+                    <Cell key={`risk-cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value) => <span className="text-xs font-semibold text-slate-300">{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </Card>
 
         <Card title="Content Type Distribution" icon={Layers}>
-          <div className="pt-2">
-            <BarList items={perType} />
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={typePieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={88}
+                  paddingAngle={3}
+                  dataKey="value"
+                  nameKey="name"
+                  stroke="none"
+                  isAnimationActive={true}
+                >
+                  {typePieData.map((entry, index) => (
+                    <Cell key={`type-cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value) => <span className="text-xs font-semibold text-slate-300">{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </Card>
       </div>

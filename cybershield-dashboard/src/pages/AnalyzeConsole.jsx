@@ -1,7 +1,20 @@
-import { useState } from 'react';
-import { SearchCode, Play, Trash2, ShieldAlert, CreditCard, Sparkles, CheckCircle2, AlertOctagon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  SearchCode,
+  Play,
+  Trash2,
+  ShieldAlert,
+  CreditCard,
+  Sparkles,
+  CheckCircle2,
+  AlertOctagon,
+  Camera,
+  QrCode,
+  RefreshCw,
+} from 'lucide-react';
 import { api } from '../api.js';
 import { RiskBadge, ScoreRing, Card, Spinner } from '../components/ui.jsx';
+import SpecularButton from '../components/SpecularButton.jsx';
 
 const TYPES = ['URL', 'EMAIL', 'SMS', 'QR', 'WEBPAGE', 'SOCIAL'];
 
@@ -28,6 +41,43 @@ export default function AnalyzeConsole() {
   const [res, setRes] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Camera Scanner state
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      // Clean up camera stream on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
+
+  async function startCamera() {
+    setCameraError('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraActive(true);
+    } catch {
+      setCameraError('Could not access camera device. (Check browser camera permissions)');
+    }
+  }
+
+  function stopCamera() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  }
 
   async function run() {
     if (!content.trim()) return;
@@ -56,7 +106,7 @@ export default function AnalyzeConsole() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-12">
-        {/* Left Column: Input & Controls */}
+        {/* Left Column: Input & Camera Scanner Controls */}
         <div className="space-y-5 lg:col-span-5">
           <div className="glass-card rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between">
@@ -77,6 +127,7 @@ export default function AnalyzeConsole() {
                   onClick={() => {
                     setType(t);
                     if (SAMPLES[t]) setContent(SAMPLES[t]);
+                    if (t !== 'QR' && isCameraActive) stopCamera();
                   }}
                   className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${
                     type === t
@@ -89,6 +140,66 @@ export default function AnalyzeConsole() {
               ))}
             </div>
 
+            {/* ANIMATED CAMERA SCANNER VIEWPORT FOR QR SCANNING */}
+            {type === 'QR' && (
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-cyber-accent flex items-center gap-1.5">
+                    <Camera className="h-3.5 w-3.5" /> Camera Scanning Viewfinder
+                  </span>
+                  <button
+                    onClick={isCameraActive ? stopCamera : startCamera}
+                    className="flex items-center gap-1.5 rounded-lg border border-cyber-accent/40 bg-cyber-accent/10 px-2.5 py-1 text-[11px] font-bold text-cyber-accent hover:bg-cyber-accent/20 transition-all"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>{isCameraActive ? 'Turn Off WebCam' : 'Enable WebCam'}</span>
+                  </button>
+                </div>
+
+                {/* Futuristic Camera Scanner Viewport */}
+                <div className="relative h-56 w-full overflow-hidden rounded-2xl border-2 border-cyber-accent/40 bg-slate-950/90 shadow-2xl flex items-center justify-center">
+                  {/* Live WebCam Video or Simulated Grid Canvas */}
+                  {isCameraActive ? (
+                    <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-2 text-center p-4">
+                      <QrCode className="h-12 w-12 text-cyber-accent/40 animate-cyber-pulse" />
+                      <div className="text-xs font-mono text-slate-300 font-bold">CYBER SCANNER RETICLE READY</div>
+                      <div className="text-[10px] text-slate-500">
+                        Align QR code inside the viewfinder reticle or enable camera
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4 Neon Corner Brackets */}
+                  <div className="absolute left-3 top-3 h-6 w-6 border-l-2 border-t-2 border-cyber-accent rounded-tl-md animate-corner-glow" />
+                  <div className="absolute right-3 top-3 h-6 w-6 border-r-2 border-t-2 border-cyber-accent rounded-tr-md animate-corner-glow" />
+                  <div className="absolute bottom-3 left-3 h-6 w-6 border-l-2 border-b-2 border-cyber-accent rounded-bl-md animate-corner-glow" />
+                  <div className="absolute bottom-3 right-3 h-6 w-6 border-r-2 border-b-2 border-cyber-accent rounded-br-md animate-corner-glow" />
+
+                  {/* Animated Sweeping Laser Line */}
+                  <div className="absolute inset-x-4 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#38bdf8] animate-scan-laser pointer-events-none" />
+
+                  {/* Center Crosshair Target Overlay */}
+                  <div className="absolute h-10 w-10 rounded-full border border-cyan-400/40 pointer-events-none flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-cyan-400/80 animate-cyber-pulse" />
+                  </div>
+
+                  {/* Scanning Status Badge Overlay */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-cyan-500/40 bg-slate-950/80 px-3 py-0.5 font-mono text-[10px] font-bold text-cyan-300 backdrop-blur-md flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-cyber-pulse" />
+                    <span>TARGET LOCK ACTIVE</span>
+                  </div>
+                </div>
+
+                {cameraError && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11px] text-amber-300">
+                    {cameraError}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Content Textarea */}
             <div>
               <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
@@ -98,21 +209,25 @@ export default function AnalyzeConsole() {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={10}
+                rows={type === 'QR' ? 5 : 9}
                 className="w-full rounded-xl border border-cyber-border bg-cyber-dark p-3.5 font-mono text-xs text-slate-200 placeholder-slate-600 outline-none focus:border-cyber-accent focus:ring-1 focus:ring-cyber-accent"
                 placeholder="Paste URL, SMS, email payload, UPI QR string, or raw HTML..."
               />
             </div>
 
             {/* Run Button */}
-            <button
+            <SpecularButton
               onClick={run}
               disabled={busy || !content.trim()}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyber-accent to-cyber-indigo py-3 text-sm font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-cyber-glow"
+              size="lg"
+              lineColor="#38bdf8"
+              baseColor="#0369a1"
+              radius={14}
+              className="w-full font-bold shadow-cyber-glow"
             >
-              {busy ? <Spinner className="h-4 w-4 text-slate-950" /> : <Play className="h-4 w-4 fill-slate-950" />}
-              <span>{busy ? 'Running Security Engine…' : 'Execute Threat Inspection'}</span>
-            </button>
+              {busy ? <Spinner className="h-4 w-4 text-cyan-400" /> : <Play className="h-4 w-4 fill-cyan-400 text-cyan-400" />}
+              <span className="text-white">{busy ? 'Running Security Engine…' : 'Execute Threat Inspection'}</span>
+            </SpecularButton>
 
             {err && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 flex items-center gap-2">
@@ -144,7 +259,7 @@ export default function AnalyzeConsole() {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
                     <RiskBadge level={res.riskLevel} />
                     <span className="font-mono text-xs font-semibold text-slate-300">
-                      “{res.wording}”
+                      "{res.wording}"
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 font-mono text-xs text-slate-400 pt-1">

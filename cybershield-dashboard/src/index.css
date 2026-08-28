@@ -23,24 +23,29 @@ body {
   background-size: 24px 24px;
 }
 
-/* Glassmorphism panel styling */
+/* Glassmorphism panel & card styling */
 .glass-panel {
-  background: rgba(13, 17, 26, 0.75);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(30, 38, 56, 0.8);
+  background: rgba(11, 15, 25, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .glass-card {
-  background: rgba(19, 25, 38, 0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(38, 49, 71, 0.6);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(6, 182, 212, 0.4);
-  box-shadow: 0 8px 32px -8px rgba(6, 182, 212, 0.12);
-  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 12px 40px -8px rgba(6, 182, 212, 0.22), inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
 }
 
 /* Custom scrollbars */
@@ -68,3 +73,39 @@ body {
 .animate-cyber-pulse {
   animation: cyberPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Laser scanning line animation for camera scan viewfinder */
+@keyframes scanLaser {
+  0% {
+    top: 4%;
+    opacity: 0.9;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 4%;
+    opacity: 0.9;
+  }
+}
+
+.animate-scan-laser {
+  animation: scanLaser 2.2s ease-in-out infinite;
+}
+
+@keyframes cornerGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px #38bdf8;
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 20px #38bdf8;
+  }
+}
+
+.animate-corner-glow {
+  animation: cornerGlow 1.8s ease-in-out infinite;
+}
+
