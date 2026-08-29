@@ -43,18 +43,6 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
-        b.btnOffline.setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("Use Cyber Shield offline")
-                .setMessage("Scam, phishing and QR/UPI checks all run on your device — no account needed.\n\n"
-                        + "You won't have cross-device history, threat-report moderation or the admin dashboard "
-                        + "until you sign in.")
-                .setPositiveButton("Continue offline", (d, w) -> {
-                    CyberShieldApp.get().api().store().setGuest(true);
-                    goToApp();
-                })
-                .setNegativeButton("Cancel", null)
-                .show());
-
         b.serverInfo.setOnClickListener(v -> editServerUrl());
         updateServerInfo();
 
@@ -87,7 +75,7 @@ public class AuthActivity extends AppCompatActivity {
         b.tilCode.setVisibility(verify || reset ? View.VISIBLE : View.GONE);
 
         switch (m) {
-            case SIGN_IN -> set("Sign in", "Use your Cyber Shield account.", "Sign in", "Create an account", true);
+            case SIGN_IN -> set("Sign in", "Use your Secure Me account.", "Sign in", "Create an account", true);
             case SIGN_UP -> set("Create account", "We'll email a 6-digit code to confirm it's your address.", "Create account", "I already have an account", false);
             case VERIFY -> {
                 set("Confirm your account",
@@ -108,7 +96,6 @@ public class AuthActivity extends AppCompatActivity {
         b.btnSecondary.setText(secondary);
         b.btnForgot.setText("Forgot password?");
         b.btnForgot.setVisibility(showForgot ? View.VISIBLE : View.GONE);
-        b.btnOffline.setVisibility(mode == Mode.SIGN_IN ? View.VISIBLE : View.GONE);
     }
 
     private void submit() {

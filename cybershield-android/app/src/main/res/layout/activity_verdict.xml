@@ -21,22 +21,50 @@
             android:textStyle="bold"
             android:background="@color/muted" />
 
-        <TextView
-            android:id="@+id/score"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textColor="@color/text"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:text="—" />
-
-        <TextView
-            android:id="@+id/wording"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/muted"
-            android:text="" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="14dp">
+
+            <com.cybershield.app.ui.RiskDonutView
+                android:id="@+id/donut"
+                android:layout_width="132dp"
+                android:layout_height="132dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/score"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text"
+                    android:textSize="34sp"
+                    android:textStyle="bold"
+                    android:text="—" />
+
+                <TextView
+                    android:id="@+id/wording"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/muted"
+                    android:text="" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/muted"
+                    android:textSize="11sp"
+                    android:text="tap the circle for confidence / signs" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/paymentWarn"
@@ -44,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:padding="12dp"
-            android:background="@color/panel"
+            android:background="@drawable/bg_glass"
             android:textColor="@color/risk_malicious"
             android:textStyle="bold"
             android:visibility="gone"
@@ -57,7 +85,7 @@
             android:orientation="vertical"
             android:layout_marginTop="16dp"
             android:padding="12dp"
-            android:background="@color/panel"
+            android:background="@drawable/bg_glass"
             android:visibility="gone">
 
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"

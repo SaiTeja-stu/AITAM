@@ -106,7 +106,10 @@ final class BrowserUrlReader {
         if (s.regionMatches(true, 0, "http://", 0, 7) || s.regionMatches(true, 0, "https://", 0, 8)) {
             return s;
         }
-        if (LOOKS_LIKE_HOST.matcher(s).matches()) return "http://" + s;
+        // Chrome's collapsed bar shows just the domain of the CURRENT page, which
+        // today is virtually always HTTPS — assume https so we don't wrongly fire
+        // the "no HTTPS" signal on legitimate sites.
+        if (LOOKS_LIKE_HOST.matcher(s).matches()) return "https://" + s;
         return null;                        // search terms, "New tab", etc.
     }
 }

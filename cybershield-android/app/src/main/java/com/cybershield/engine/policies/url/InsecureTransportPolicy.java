@@ -19,7 +19,8 @@ public class InsecureTransportPolicy extends AbstractPolicy {
     protected List<Signal> doEvaluate(PolicyContext ctx) {
         List<Signal> out = new ArrayList<>();
         for (var u : ctx.allUrls()) {
-            if (!u.isHttps() && !u.hostIsIpLiteral()) {
+            // skip when the caller gave a bare domain — we never actually saw "http://"
+            if (!u.isHttps() && !u.hostIsIpLiteral() && !u.schemeInferred()) {
                 out.add(signal("No HTTPS",
                         "'" + u.host() + "' is served over an unencrypted connection; data entered there can be intercepted.",
                         Severity.MEDIUM, 12));

@@ -76,9 +76,10 @@ public class VerdictActivity extends AppCompatActivity {
 
     private void renderLocal(LocalVerdict v) {
         b.badge.setText(v.priority() + " · on-device check");
-        b.badge.setBackgroundColor(colorForLevel(v.level.name()));
+        pill(colorForLevel(v.level.name()));
         b.score.setText(String.valueOf(v.score));
         b.score.setTextColor(colorForLevel(v.level.name()));
+        b.donut.set(v.score, v.level.name(), 0, v.reasons == null ? 0 : v.reasons.size());
         b.wording.setText("Preliminary — confirming with the server…");
         b.paymentWarn.setVisibility(v.initiatesPayment ? View.VISIBLE : View.GONE);
         adapter.setReasons(v.reasons);
@@ -96,12 +97,16 @@ public class VerdictActivity extends AppCompatActivity {
         String badgeText = unverifiedClean ? "UNVERIFIED" : r.priority + " · " + r.riskLevel.replace('_', ' ');
         int color = unverifiedClean ? Color.parseColor("#93A0BC") : colorForLevel(r.riskLevel);
         b.badge.setText(badgeText);
-        b.badge.setBackgroundColor(color);
+        pill(color);
         b.score.setText(String.valueOf(r.riskScore));
         b.score.setTextColor(color);
 
+        int warnCount = 0;
+        if (r.signals != null) for (AnalyzeResponse.Signal s : r.signals) if (s.weight > 0) warnCount++;
+        b.donut.set(r.riskScore, r.riskLevel, r.confidence, warnCount);
+
         if (r.trusted) {
-            b.wording.setText("On Cyber Shield's verified safe list — no warning signs.");
+            b.wording.setText("On Secure Me's verified safe list — no warning signs.");
         } else if (unverifiedClean) {
             b.wording.setText("No warning signs found — but we could NOT confirm this is safe. "
                     + "Be careful before logging in or paying.");
@@ -128,6 +133,16 @@ public class VerdictActivity extends AppCompatActivity {
 
     private static String safe(String s) {
         return s == null ? "—" : s;
+    }
+
+    /** Rounded pill badge, tinted + faint translucent fill. */
+    private void pill(int color) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+        d.setColor((color & 0x00FFFFFF) | 0x33000000);           // ~20% fill
+        d.setStroke(Math.round(getResources().getDisplayMetrics().density), color);
+        d.setCornerRadius(999f);
+        b.badge.setBackground(d);
+        b.badge.setTextColor(color);
     }
 
     private int colorForLevel(String level) {

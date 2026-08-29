@@ -1,5 +1,5 @@
 {
-  "_comment": "Cyber Shield URL risk model. LogisticRegression on lexical features. Output is a probability fed to the rule engine as ONE capped signal.",
+  "_comment": "Secure Me URL risk model. LogisticRegression on lexical features. Output is a probability fed to the rule engine as ONE capped signal.",
   "version": 1,
   "trained_at": "2026-08-28T17:31:22Z",
   "features": [

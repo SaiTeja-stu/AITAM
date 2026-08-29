@@ -51,7 +51,13 @@ public class UpiPaymentPolicy extends AbstractPolicy {
         String handle = vpa.contains("@") ? vpa.substring(vpa.indexOf('@') + 1).toLowerCase(Locale.ROOT) : "";
         String vpaUser = vpa.contains("@") ? vpa.substring(0, vpa.indexOf('@')) : vpa;
 
-        if (!pn.trim().isEmpty() && !vpaUser.trim().isEmpty()
+        // registered merchant QRs use an opaque handle (paytmqr…, bharatpe…, a
+        // merchant code) that never matches the shop name — that's expected, not a mismatch.
+        boolean registeredMerchant = upi.merchantCode().isPresent()
+                || vpaUser.toLowerCase(Locale.ROOT).matches("^(paytmqr|bharatpe|merchant|mab|q\\d).*")
+                || MERCHANT_HANDLES.contains(handle) && vpaUser.length() > 10;
+
+        if (!registeredMerchant && !pn.trim().isEmpty() && !vpaUser.trim().isEmpty()
                 && !normalized(vpaUser).contains(normalized(firstToken(pn)))
                 && !normalized(pn).contains(normalized(vpaUser))) {
             out.add(signal("Name does not match the UPI ID",

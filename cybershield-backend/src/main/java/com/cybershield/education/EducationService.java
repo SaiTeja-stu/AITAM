@@ -15,7 +15,9 @@ public class EducationService {
 
     private static final Logger log = LoggerFactory.getLogger(EducationService.class);
 
-    public record Module(String id, String title, String summary, List<String> keyPoints,
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
+    public record Module(String id, String icon, String title, String rule, String summary,
+                         List<String> doThis, List<String> keyPoints,
                          List<String> redFlags, String category) {}
 
     private final ObjectMapper mapper;

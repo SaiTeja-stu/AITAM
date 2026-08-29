@@ -41,6 +41,10 @@ public final class BiometricGate {
     }
 
     public static void prompt(FragmentActivity activity, Result cb) {
+        prompt(activity, "Unlock Secure Me", "Confirm it's you to open the app", cb);
+    }
+
+    public static void prompt(FragmentActivity activity, String title, String subtitle, Result cb) {
         try {
             BiometricPrompt prompt = new BiometricPrompt(activity,
                     ContextCompat.getMainExecutor(activity),
@@ -58,8 +62,8 @@ public final class BiometricGate {
                     });
 
             BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Unlock Cyber Shield")
-                    .setSubtitle("Confirm it's you to open the app")
+                    .setTitle(title)
+                    .setSubtitle(subtitle)
                     .setAllowedAuthenticators(ALLOWED)
                     .build();
 

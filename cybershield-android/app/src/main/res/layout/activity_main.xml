@@ -33,7 +33,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Cyber Shield"
+                        android:text="Secure Me"
                         android:textColor="@color/text"
                         android:textSize="24sp"
                         android:textStyle="bold" />
@@ -186,21 +186,21 @@
             android:layout_height="wrap_content"
             app:menu="@menu/bottom_nav"
             app:labelVisibilityMode="labeled"
-            android:background="@color/panel" />
+            android:background="@drawable/bg_nav_glass" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/lockOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/ink"
+        android:background="@drawable/bg_gradient"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="32dp"
         android:visibility="gone">
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="Cyber Shield is locked" android:textColor="@color/text"
+            android:text="Secure Me is locked" android:textColor="@color/text"
             android:textSize="20sp" android:textStyle="bold" />
 
         <TextView android:id="@+id/lockMsg" android:layout_width="match_parent"

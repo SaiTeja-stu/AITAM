@@ -29,13 +29,13 @@ import java.util.concurrent.Executors;
  * Auto-scans incoming email by reading the mail app's own new-message
  * notification — sender, subject and preview line. No Gmail login, no OAuth,
  * nothing uploaded: the text is run through the same on-device EMAIL engine as
- * a manual paste, and if it looks like phishing Cyber Shield posts its own
+ * a manual paste, and if it looks like phishing Secure Me posts its own
  * warning notification.
  *
  * <p>Limitation: a notification only carries the sender name, subject and a
  * ~100-char preview — not the full body or the SPF/DKIM/DMARC headers. It still
  * catches look-alike senders, urgency/credential language and bad links. For the
- * full check, open the mail and Share it into Cyber Shield.
+ * full check, open the mail and Share it into Secure Me.
  */
 public class EmailNotificationListener extends NotificationListenerService {
 

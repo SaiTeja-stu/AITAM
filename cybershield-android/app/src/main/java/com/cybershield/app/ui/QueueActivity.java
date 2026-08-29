@@ -62,6 +62,7 @@ public class QueueActivity extends AppCompatActivity {
     private void load() {
         b.empty.setText("Loading…");
         b.empty.setVisibility(View.VISIBLE);
+
         if (admin) {
             CyberShieldApp.get().api().api().adminScans(level.isEmpty() ? null : level, 0, 50)
                     .enqueue(new Callback<>() {
@@ -70,22 +71,45 @@ public class QueueActivity extends AppCompatActivity {
                         }
                         @Override public void onFailure(@NonNull Call<Page<Page.ScanItem>> c, @NonNull Throwable t) { fail(); }
                     });
-        } else {
-            CyberShieldApp.get().api().api().myHistory(0, 50).enqueue(new Callback<>() {
-                @Override public void onResponse(@NonNull Call<Map<String, Object>> c, @NonNull Response<Map<String, Object>> r) {
-                    List<Page.ScanItem> items = new ArrayList<>();
-                    if (r.isSuccessful() && r.body() != null && r.body().get("items") instanceof List<?> raw) {
-                        com.google.gson.Gson g = new com.google.gson.Gson();
-                        for (Object o : raw) {
-                            Page.ScanItem it = g.fromJson(g.toJson(o), Page.ScanItem.class);
-                            if (level.isEmpty() || level.equals(it.riskLevel)) items.add(it);
-                        }
-                    }
-                    show(items);
-                }
-                @Override public void onFailure(@NonNull Call<Map<String, Object>> c, @NonNull Throwable t) { fail(); }
-            });
+            return;
         }
+
+        // Regular user: show the on-device history immediately (works offline)…
+        show(localHistory());
+
+        // …then let the backend add anything synced from other devices.
+        if (!CyberShieldApp.get().api().store().hasAccount()) return;
+        CyberShieldApp.get().api().api().myHistory(0, 50).enqueue(new Callback<>() {
+            @Override public void onResponse(@NonNull Call<Map<String, Object>> c, @NonNull Response<Map<String, Object>> r) {
+                List<Page.ScanItem> items = new ArrayList<>();
+                if (r.isSuccessful() && r.body() != null && r.body().get("items") instanceof List<?> raw) {
+                    com.google.gson.Gson g = new com.google.gson.Gson();
+                    for (Object o : raw) {
+                        Page.ScanItem it = g.fromJson(g.toJson(o), Page.ScanItem.class);
+                        if (level.isEmpty() || level.equals(it.riskLevel)) items.add(it);
+                    }
+                }
+                if (!items.isEmpty()) show(items);
+            }
+            @Override public void onFailure(@NonNull Call<Map<String, Object>> c, @NonNull Throwable t) { /* local list stays */ }
+        });
+    }
+
+    private List<Page.ScanItem> localHistory() {
+        List<Page.ScanItem> out = new ArrayList<>();
+        try {
+            for (com.cybershield.app.data.ScanEntity e : CyberShieldApp.get().db().scanDao().recent()) {
+                if (!level.isEmpty() && !level.equals(e.riskLevel)) continue;
+                Page.ScanItem it = new Page.ScanItem();
+                it.type = e.type;
+                it.snippet = e.snippet;
+                it.riskScore = e.riskScore;
+                it.riskLevel = e.riskLevel;
+                it.priority = e.priority;
+                out.add(it);
+            }
+        } catch (Exception ignored) { }
+        return out;
     }
 
     private void show(List<Page.ScanItem> items) {

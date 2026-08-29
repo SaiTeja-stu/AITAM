@@ -57,7 +57,7 @@ public class ShieldPrefs {
         p.edit().putBoolean("watch_email", v).apply();
     }
 
-    /** Running count of scam SMS Cyber Shield has flagged (shown on the alert). */
+    /** Running count of scam SMS Secure Me has flagged (shown on the alert). */
     public int spamSmsCount() {
         return p.getInt("spam_sms_count", 0);
     }

@@ -51,15 +51,14 @@ public class SecureStore {
     public void setRefreshToken(String t) { prefs.edit().putString(K_REFRESH, t).apply(); }
     public boolean hasRefreshToken() { return refreshToken() != null; }
 
-    /** True if the app may proceed past the auth screen: a real session, or offline/guest mode. */
-    public boolean hasSession() { return hasToken() || hasRefreshToken() || isGuest(); }
+    /** True if the app may proceed past the auth screen — a real backend session is required. */
+    public boolean hasSession() { return hasToken() || hasRefreshToken(); }
 
-    /** True when we have a real backend session (not just offline/guest). */
-    public boolean hasAccount() { return hasToken() || hasRefreshToken(); }
+    /** Kept as an alias for call sites that distinguished account vs guest. */
+    public boolean hasAccount() { return hasSession(); }
 
-    /** Offline mode: no account, everything runs on-device. */
-    public boolean isGuest() { return prefs.getBoolean(K_GUEST, false); }
-    public void setGuest(boolean on) { prefs.edit().putBoolean(K_GUEST, on).apply(); }
+    public boolean isGuest() { return false; }
+    public void setGuest(boolean on) { /* guest mode removed */ }
 
     public void setTokens(String access, String refresh) {
         SharedPreferences.Editor e = prefs.edit();
@@ -92,4 +91,8 @@ public class SecureStore {
     /** Off by default - the user opts in from settings. */
     public boolean biometricLock() { return prefs.getBoolean(K_BIOMETRIC, false); }
     public void setBiometricLock(boolean on) { prefs.edit().putBoolean(K_BIOMETRIC, on).apply(); }
+
+    /** Language for the education section: "en" | "te" | "hi". */
+    public String eduLang() { return prefs.getString("edu_lang", "en"); }
+    public void setEduLang(String lang) { prefs.edit().putString("edu_lang", lang).apply(); }
 }

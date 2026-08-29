@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="These permissions let Cyber Shield warn you on payment and QR screens in OTHER apps. It reads only the payee and amount on those screens, checks them on your device, and uploads nothing. You can turn any of this off at any time."
+            android:text="These permissions let Secure Me warn you about scam SMS, phishing emails and dangerous websites. Every check runs on your device and nothing is uploaded. You can turn any of this off at any time."
             android:textColor="@color/muted" />
 
         <TextView android:id="@+id/stSms" style="@style/OnbStep" android:text="1 · Allow reading SMS (scan incoming texts)" />
@@ -31,7 +31,7 @@
         <TextView android:id="@+id/stOverlay" style="@style/OnbStep" android:text="2 · Allow drawing over other apps (the warning banner)" />
         <com.google.android.material.button.MaterialButton android:id="@+id/btnOverlay" style="@style/OnbBtn" android:text="Open overlay setting" />
 
-        <TextView android:id="@+id/stAccessibility" style="@style/OnbStep" android:text="3 · Turn on the Cyber Shield accessibility service (payment-screen watch)" />
+        <TextView android:id="@+id/stAccessibility" style="@style/OnbStep" android:text="3 · Turn on the Secure Me accessibility service (dangerous-website warnings in your browser)" />
         <com.google.android.material.button.MaterialButton android:id="@+id/btnAccessibility" style="@style/OnbBtn" android:text="Open accessibility setting" />
 
         <TextView android:id="@+id/stNotif" style="@style/OnbStep" android:text="4 · Allow notification access (auto-scan incoming email)" />
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Strict: also stop me on sites Cyber Shield can't verify (more interruptions)"
+            android:text="Strict: also stop me on sites Secure Me can't verify (more interruptions)"
             android:textColor="@color/text" />
 
         <com.google.android.material.materialswitch.MaterialSwitch

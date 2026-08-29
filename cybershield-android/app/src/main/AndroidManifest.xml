@@ -30,13 +30,18 @@
         tools:targetApi="34">
 
         <activity
-            android:name=".ui.MainActivity"
-            android:exported="true">
+            android:name=".ui.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SecureMe.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="false" />
 
         <activity android:name=".ui.AuthActivity" android:exported="true">
             <!-- Password-reset deep link from the email: cybershield://reset?email=..&code=.. -->
@@ -58,6 +63,11 @@
         <activity android:name=".ui.ReportsActivity" android:exported="false" />
         <activity android:name=".ui.EducationListActivity" android:exported="false" />
         <activity android:name=".ui.OverviewActivity" android:exported="false" />
+        <activity
+            android:name=".ui.ProceedGateActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.CyberShield.Transparent" />
 
         <!-- Receives text shared from ANY app (WhatsApp, SMS, browsers, social) -->
         <activity
@@ -69,6 +79,12 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!-- Screenshot of a scam DM / post -> on-device OCR -> analysis -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
 
@@ -100,7 +116,7 @@
         <service
             android:name=".mailwatch.EmailNotificationListener"
             android:exported="false"
-            android:label="Cyber Shield — email watch"
+            android:label="Secure Me — email watch"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

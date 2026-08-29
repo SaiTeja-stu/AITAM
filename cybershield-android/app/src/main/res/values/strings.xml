@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Cyber Shield</string>
-    <string name="shield_service_label">Cyber Shield — fraud protection</string>
-    <string name="shield_service_description">Warns you before you pay a suspicious UPI recipient, and warns you when you open a dangerous website in your browser. On payment screens it reads only the payee and amount; in browsers it reads only the address-bar URL. Every risk check runs on your device — nothing is uploaded.</string>
+    <string name="app_name">Secure Me</string>
+    <string name="shield_service_label">Secure Me — browsing protection</string>
+    <string name="shield_service_description">Warns you when you open a dangerous or fake website in your browser. It reads only the address-bar URL and whether the page is a sign-in page. Every risk check runs on your device — nothing is uploaded.</string>
 
     <string name="scan_qr">Scan a QR code</string>
     <string name="paste_check">Check a message or link</string>

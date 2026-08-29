@@ -7,4 +7,4 @@
     android:notificationTimeout="200"
     android:description="@string/shield_service_description"
     android:summary="@string/shield_service_description"
-    android:packageNames="com.google.android.apps.nbu.paisa.user,com.phonepe.app,net.one97.paytm,in.org.npci.upiapp,com.google.android.gms,com.whatsapp,com.axis.mobile,com.sbi.lotusintouch,com.snapwork.hdfc,com.csam.icici.bank.imobile,com.bankofbaroda.upi,com.amazon.mShop.android.shopping,com.freecharge.android,com.mobikwik_new,com.android.chrome,com.chrome.beta,com.chrome.dev,com.brave.browser,com.microsoft.emmx,com.sec.android.app.sbrowser,com.opera.browser,com.opera.mini.native,org.mozilla.firefox,com.duckduckgo.mobile.android" />
+    android:packageNames="com.android.chrome,com.chrome.beta,com.chrome.dev,com.brave.browser,com.microsoft.emmx,com.sec.android.app.sbrowser,com.opera.browser,com.opera.mini.native,org.mozilla.firefox,com.duckduckgo.mobile.android" />

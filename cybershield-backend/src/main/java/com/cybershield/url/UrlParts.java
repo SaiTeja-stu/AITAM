@@ -17,9 +17,11 @@ public final class UrlParts {
     private final String path;
     private final String query;
     private final boolean hasUserInfo;  // credentials in URL (obfuscation signal)
+    private final boolean schemeInferred; // caller gave a bare domain; we guessed the scheme
 
-    private UrlParts(String original, URI uri) {
+    private UrlParts(String original, URI uri, boolean schemeInferred) {
         this.original = original;
+        this.schemeInferred = schemeInferred;
         this.scheme = uri.getScheme().toLowerCase(Locale.ROOT);
         String h = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
         if (h.endsWith(".")) h = h.substring(0, h.length() - 1);
@@ -35,9 +37,11 @@ public final class UrlParts {
         if (raw == null) return Optional.empty();
         String s = raw.trim();
         if (s.isEmpty() || s.length() > 2048) return Optional.empty();
-        // add scheme for bare domains
+        // add scheme for bare domains (we don't actually know http vs https)
+        boolean inferred = false;
         if (!s.matches("(?i)^[a-z][a-z0-9+.-]*://.*")) {
-            s = "http://" + s;
+            s = "https://" + s;
+            inferred = true;
         }
         try {
             URI uri = new URI(s);
@@ -46,7 +50,7 @@ public final class UrlParts {
             scheme = scheme.toLowerCase(Locale.ROOT);
             if (!scheme.equals("http") && !scheme.equals("https")) return Optional.empty();
             if (uri.getHost() == null || uri.getHost().isBlank()) return Optional.empty();
-            return Optional.of(new UrlParts(raw.trim(), uri));
+            return Optional.of(new UrlParts(raw.trim(), uri, inferred));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -60,6 +64,7 @@ public final class UrlParts {
     public String query() { return query; }
     public boolean hasUserInfo() { return hasUserInfo; }
     public boolean isHttps() { return "https".equals(scheme); }
+    public boolean schemeInferred() { return schemeInferred; }
 
     /** The registrable-ish domain: last two labels (best-effort, no PSL). */
     public String baseDomain() {

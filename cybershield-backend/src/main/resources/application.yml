@@ -77,7 +77,7 @@ cybershield:
     secret: ${CYBERSHIELD_JWT_SECRET:}        # >=32 chars in production
     ttl-seconds: 900
   hmac-secret: ${CYBERSHIELD_HMAC_SECRET:dev-only-insecure-salt-change-me}
-  app-name: Cyber Shield
+  app-name: Secure Me
   admin:
     username: ${CYBERSHIELD_ADMIN_USER:}
     password: ${CYBERSHIELD_ADMIN_PASSWORD:}

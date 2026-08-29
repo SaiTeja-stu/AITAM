@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
         b.recent.setLayoutManager(new LinearLayoutManager(this));
         b.recent.setAdapter(recentAdapter);
 
-        eduAdapter = new EduAdapter(m -> startActivity(EduDetailActivity.intent(this, m)));
+        eduAdapter = new EduAdapter(m -> startActivity(
+                EduDetailActivity.intent(this, m, store.eduLang())));
         b.education.setLayoutManager(new LinearLayoutManager(this));
         b.education.setAdapter(eduAdapter);
 
@@ -254,12 +255,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadEducation() {
-        eduAdapter.set(com.cybershield.app.data.EducationCatalog.bundled(this));   // offline-first
+        eduAdapter.set(com.cybershield.app.data.EducationCatalog.bundled(this, store.eduLang()));   // offline-first
+        if (!"en".equals(store.eduLang())) return;   // te/hi are bundled-only
         CyberShieldApp.get().api().api().educationModules().enqueue(new Callback<>() {
             @Override
             public void onResponse(@androidx.annotation.NonNull Call<List<EduAdapter.Module>> call,
                                    @androidx.annotation.NonNull Response<List<EduAdapter.Module>> resp) {
-                if (resp.isSuccessful() && resp.body() != null && !resp.body().isEmpty()) {
+                if (resp.isSuccessful() && resp.body() != null && !resp.body().isEmpty()
+                        && "en".equals(store.eduLang())) {
                     eduAdapter.set(resp.body());
                 }
             }

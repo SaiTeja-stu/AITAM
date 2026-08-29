@@ -40,7 +40,7 @@ final class EmailTemplates {
 
     static String welcome(String name) {
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>Your Cyber Shield account is now active. You can sign in on the Android app "
+                + "<p>Your Secure Me account is now active. You can sign in on the Android app "
                 + "or the browser extension.</p>"
                 + "<p>We'll email you when a new device signs in, and when we block a serious threat "
                 + "aimed at you.</p>";
@@ -48,7 +48,7 @@ final class EmailTemplates {
 
     static String signInAlert(String name, String when) {
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>Your Cyber Shield account was just signed in at <b>" + esc(when) + "</b>.</p>"
+                + "<p>Your Secure Me account was just signed in at <b>" + esc(when) + "</b>.</p>"
                 + "<p>If this was you, no action is needed. If it wasn't, "
                 + "<b>reset your password immediately</b> from the app.</p>";
     }
@@ -68,13 +68,13 @@ final class EmailTemplates {
 
     static String passwordChanged(String name, String when) {
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>Your Cyber Shield password was changed at <b>" + esc(when) + "</b>.</p>"
+                + "<p>Your Secure Me password was changed at <b>" + esc(when) + "</b>.</p>"
                 + "<p>If this wasn't you, contact support and reset your password again right away.</p>";
     }
 
     static String threatAlert(String name, String type, String level, int score, String topSignal, String snippet) {
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>Cyber Shield flagged something you checked as <b style=\"color:#f87171\">"
+                + "<p>Secure Me flagged something you checked as <b style=\"color:#f87171\">"
                 + esc(level.replace('_', ' ')) + "</b> (risk " + score + "/100).</p>"
                 + "<ul><li><b>Type:</b> " + esc(type) + "</li>"
                 + "<li><b>Main reason:</b> " + esc(topSignal) + "</li>"

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * Truecaller-style bucket for an incoming SMS, from its text + sender.
  *
- * <p>This is a cheap first pass that decides how NOISY Cyber Shield should be:
+ * <p>This is a cheap first pass that decides how NOISY Secure Me should be:
  * a legitimate OTP or bank alert should never trigger a "scam" warning, while a
  * message the detection engine scored risky is surfaced loudly. The engine
  * verdict always wins for {@link Category#FRAUD}.
@@ -131,7 +131,7 @@ public final class SmsClassifier {
         return prev[b.length()];
     }
 
-    /** Should Cyber Shield raise a visible warning for this category? */
+    /** Should Secure Me raise a visible warning for this category? */
     public static boolean isAlertWorthy(Category c) {
         return c == Category.SPAM || c == Category.FRAUD;
     }

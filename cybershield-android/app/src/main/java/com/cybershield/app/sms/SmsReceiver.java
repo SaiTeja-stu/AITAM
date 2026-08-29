@@ -24,7 +24,7 @@ import com.cybershield.app.util.Redact;
  * (OTP / bank alert / promo / spam / fraud) and only <b>spam / fraud</b> raises a
  * visible warning — a real OTP or debit alert never gets a "scam" popup.
  *
- * <p>Cyber Shield is not the default SMS app, so it cannot delete or hide the
+ * <p>Secure Me is not the default SMS app, so it cannot delete or hide the
  * message from the stock Messages app; it warns, explains why, and keeps a
  * running "N scam texts flagged" count.
  *
@@ -89,7 +89,7 @@ public class SmsReceiver extends BroadcastReceiver {
         if (!SmsClassifier.isAlertWorthy(cat)) return;   // OTP / bank / promo -> stay quiet
 
         if (reason == null && reportedNumber) {
-            reason = "This sender has been reported for fraud by other Cyber Shield users";
+            reason = "This sender has been reported for fraud by other Secure Me users";
         } else if (reason == null
                 && SmsClassifier.impersonatesInstitution(text.toLowerCase())
                 && !SmsClassifier.looksLikeRegisteredSender(sender)) {
@@ -106,7 +106,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 ? (isFraud ? "This message is a scam. Do not click links or reply." : "Looks like unwanted spam.")
                 : reason;
         String big = why + "\n\n“" + Redact.snippet(text) + "”"
-                + "\n\nCyber Shield has flagged " + total + " scam text" + (total == 1 ? "" : "s") + " so far."
+                + "\n\nSecure Me has flagged " + total + " scam text" + (total == 1 ? "" : "s") + " so far."
                 + (isFraud ? "\nNever share OTP / PIN / card details. Don't tap links in this message." : "");
 
         Intent open = VerdictActivity.intent(ctx, "SMS", text, "sms");

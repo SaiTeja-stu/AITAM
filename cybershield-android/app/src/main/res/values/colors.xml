@@ -10,4 +10,16 @@
     <color name="risk_suspicious">#FDE047</color>
     <color name="risk_high">#FB923C</color>
     <color name="risk_malicious">#F87171</color>
+
+    <!-- glassmorphism tokens (translucent white over the app gradient) -->
+    <color name="glass">#14FFFFFF</color>
+    <color name="glass_strong">#20FFFFFF</color>
+    <color name="glass_edge">#33FFFFFF</color>
+    <color name="glass_dim">#0AFFFFFF</color>
+
+    <!-- background gradient stops -->
+    <color name="bg_a">#12203E</color>
+    <color name="bg_b">#0B1020</color>
+    <color name="bg_c">#090C16</color>
+    <color name="scrim">#B3070A12</color>
 </resources>

@@ -38,7 +38,7 @@ public class MailService {
     public MailService(ObjectProvider<JavaMailSender> senderProvider,
                        @Value("${cybershield.mail.enabled:true}") boolean enabled,
                        @Value("${cybershield.mail.from:${SMTP_USERNAME:no-reply@cybershield.local}}") String from,
-                       @Value("${cybershield.app-name:Cyber Shield}") String appName) {
+                       @Value("${cybershield.app-name:Secure Me}") String appName) {
         this.senderProvider = senderProvider;
         this.enabled = enabled;
         this.from = from;

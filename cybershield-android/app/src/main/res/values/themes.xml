@@ -2,9 +2,20 @@
     <style name="Theme.CyberShield" parent="Theme.Material3.DynamicColors.DayNight">
         <item name="colorPrimary">@color/sky</item>
         <item name="android:colorBackground">@color/ink</item>
-        <item name="android:windowBackground">@color/ink</item>
-        <item name="android:statusBarColor">@color/ink</item>
-        <item name="android:navigationBarColor">@color/ink</item>
+        <item name="android:windowBackground">@drawable/bg_gradient</item>
+        <item name="android:statusBarColor">@color/bg_b</item>
+        <item name="android:navigationBarColor">@color/bg_c</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Launch screen: logo centred on the brand gradient, no action bar. -->
+    <style name="Theme.SecureMe.Splash" parent="Theme.CyberShield">
+        <item name="android:windowBackground">@drawable/splash_bg</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:statusBarColor">@color/bg_a</item>
+        <item name="android:navigationBarColor">@color/bg_c</item>
     </style>
 
     <style name="Theme.CyberShield.Transparent" parent="Theme.CyberShield">
@@ -32,26 +43,45 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">14dp</item>
+        <item name="boxBackgroundColor">@color/glass_dim</item>
+        <item name="boxStrokeColor">@color/glass_edge</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
     </style>
 
+    <!-- frosted-glass stat / content card -->
     <style name="DashCard" parent="Widget.Material3.CardView.Filled">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
-        <item name="cardBackgroundColor">@color/panel</item>
-        <item name="strokeColor">@color/edge</item>
+        <item name="cardBackgroundColor">@color/glass</item>
+        <item name="strokeColor">@color/glass_edge</item>
         <item name="strokeWidth">1dp</item>
-        <item name="cardCornerRadius">12dp</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
+    <!-- full-width frosted card -->
+    <style name="GlassCard" parent="Widget.Material3.CardView.Filled">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cardBackgroundColor">@color/glass</item>
+        <item name="strokeColor">@color/glass_edge</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="DashHeading">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginTop">22dp</item>
         <item name="android:textColor">@color/muted</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.04</item>
+        <item name="android:letterSpacing">0.08</item>
     </style>
 </resources>

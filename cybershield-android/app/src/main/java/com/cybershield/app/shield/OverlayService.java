@@ -72,8 +72,10 @@ public class OverlayService extends Service {
         } else {
             proceed.setOnClickListener(v -> {
                 proceed.setEnabled(false);
-                proceed.postDelayed(() -> { removeOverlay(); stopSelf(); }, 4000);
-                proceed.setText("Closing in 4s…");
+                // require the user to confirm with fingerprint / face / PIN
+                Intent gate = new Intent(this, com.cybershield.app.ui.ProceedGateActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(gate);
             });
         }
 
@@ -102,7 +104,7 @@ public class OverlayService extends Service {
     private Notification buildNotification() {
         NotificationCompat.Builder b = new NotificationCompat.Builder(this, CyberShieldApp.CHANNEL_ALERTS)
                 .setSmallIcon(R.drawable.ic_shield)
-                .setContentTitle("Cyber Shield is checking a payment")
+                .setContentTitle("Secure Me is checking a payment")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true);
         return b.build();
