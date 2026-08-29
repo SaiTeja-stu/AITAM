@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Cyber Shield</string>
-    <string name="shield_service_label">Cyber Shield — payment protection</string>
-    <string name="shield_service_description">Watches payment and QR screens in other apps and warns you before you send money to a suspicious recipient. Reads only the payee and amount on those screens; the risk check runs on your device.</string>
+    <string name="shield_service_label">Cyber Shield — fraud protection</string>
+    <string name="shield_service_description">Warns you before you pay a suspicious UPI recipient, and warns you when you open a dangerous website in your browser. On payment screens it reads only the payee and amount; in browsers it reads only the address-bar URL. Every risk check runs on your device — nothing is uploaded.</string>
 
     <string name="scan_qr">Scan a QR code</string>
     <string name="paste_check">Check a message or link</string>

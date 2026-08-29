@@ -43,6 +43,18 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
+        b.btnOffline.setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("Use Cyber Shield offline")
+                .setMessage("Scam, phishing and QR/UPI checks all run on your device — no account needed.\n\n"
+                        + "You won't have cross-device history, threat-report moderation or the admin dashboard "
+                        + "until you sign in.")
+                .setPositiveButton("Continue offline", (d, w) -> {
+                    CyberShieldApp.get().api().store().setGuest(true);
+                    goToApp();
+                })
+                .setNegativeButton("Cancel", null)
+                .show());
+
         b.serverInfo.setOnClickListener(v -> editServerUrl());
         updateServerInfo();
 
@@ -96,6 +108,7 @@ public class AuthActivity extends AppCompatActivity {
         b.btnSecondary.setText(secondary);
         b.btnForgot.setText("Forgot password?");
         b.btnForgot.setVisibility(showForgot ? View.VISIBLE : View.GONE);
+        b.btnOffline.setVisibility(mode == Mode.SIGN_IN ? View.VISIBLE : View.GONE);
     }
 
     private void submit() {
@@ -107,7 +120,10 @@ public class AuthActivity extends AppCompatActivity {
 
         switch (mode) {
             case SIGN_IN -> auth.login(login, password, new AuthRepository.TokenCb() {
-                @Override public void token(String jwt) { goToApp(); }
+                @Override public void token(String jwt) {
+                    CyberShieldApp.get().api().store().setGuest(false);
+                    goToApp();
+                }
                 @Override public void needsVerification() {
                     pendingEmail = login; setMode(Mode.VERIFY); msg("We sent you a new code — check your email.", false);
                 }

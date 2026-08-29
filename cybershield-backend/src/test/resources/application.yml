@@ -35,6 +35,8 @@ cybershield:
     enabled: false
   feeds:
     enabled: false
+  rdap:
+    enabled: false                       # no external WHOIS/RDAP calls in tests
   llm:
     enabled: false
   ratelimit:

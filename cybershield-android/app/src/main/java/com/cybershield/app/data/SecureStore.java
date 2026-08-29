@@ -21,6 +21,7 @@ public class SecureStore {
     private static final String K_EMAIL = "email";
     private static final String K_BIOMETRIC = "biometric_lock";
     private static final String K_BASE_URL = "base_url";
+    private static final String K_GUEST = "offline_guest";
 
     private final SharedPreferences prefs;
 
@@ -50,8 +51,15 @@ public class SecureStore {
     public void setRefreshToken(String t) { prefs.edit().putString(K_REFRESH, t).apply(); }
     public boolean hasRefreshToken() { return refreshToken() != null; }
 
-    /** True if we have anything to log in with (access OR refresh). */
-    public boolean hasSession() { return hasToken() || hasRefreshToken(); }
+    /** True if the app may proceed past the auth screen: a real session, or offline/guest mode. */
+    public boolean hasSession() { return hasToken() || hasRefreshToken() || isGuest(); }
+
+    /** True when we have a real backend session (not just offline/guest). */
+    public boolean hasAccount() { return hasToken() || hasRefreshToken(); }
+
+    /** Offline mode: no account, everything runs on-device. */
+    public boolean isGuest() { return prefs.getBoolean(K_GUEST, false); }
+    public void setGuest(boolean on) { prefs.edit().putBoolean(K_GUEST, on).apply(); }
 
     public void setTokens(String access, String refresh) {
         SharedPreferences.Editor e = prefs.edit();
@@ -61,7 +69,7 @@ public class SecureStore {
     }
 
     public void clearSession() {
-        prefs.edit().remove(K_ACCESS).remove(K_REFRESH).apply();
+        prefs.edit().remove(K_ACCESS).remove(K_REFRESH).remove(K_GUEST).apply();
     }
 
     // --- backend URL (editable in-app so no rebuild needed per network) ---

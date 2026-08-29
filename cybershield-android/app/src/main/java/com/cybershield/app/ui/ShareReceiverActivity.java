@@ -34,11 +34,25 @@ public class ShareReceiverActivity extends AppCompatActivity {
             type = "QR";
         } else if (text.startsWith("http://") || text.startsWith("https://")) {
             type = "URL";
+        } else if (looksLikeEmail(text)) {
+            type = "EMAIL";
         } else {
             type = "SOCIAL";
         }
 
         VerdictActivity.start(this, type, text, "share-sheet");
         finish();
+    }
+
+    /** Shared text that carries mail headers (forwarded email / "Show original"). */
+    private static boolean looksLikeEmail(String text) {
+        String head = text.length() > 4000 ? text.substring(0, 4000) : text;
+        String lower = head.toLowerCase();
+        int hits = 0;
+        if (lower.matches("(?s).*(^|\\n)from:\\s?.*@.*")) hits++;
+        if (lower.matches("(?s).*(^|\\n)subject:\\s?.*")) hits++;
+        if (lower.contains("authentication-results:") || lower.matches("(?s).*(^|\\n)received:\\s?.*")) hits++;
+        if (lower.matches("(?s).*(^|\\n)to:\\s?.*@.*")) hits++;
+        return hits >= 2;
     }
 }

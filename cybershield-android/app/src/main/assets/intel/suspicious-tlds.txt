@@ -1,0 +1,17 @@
+# TLDs disproportionately associated with abuse (heuristic, low weight).
+zip
+mov
+top
+xyz
+club
+online
+click
+country
+gq
+cf
+tk
+ml
+work
+support
+rest
+fit

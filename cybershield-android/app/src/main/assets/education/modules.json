@@ -1,0 +1,109 @@
+[
+  {
+    "id": "phishing-basics",
+    "title": "Spotting a phishing message",
+    "summary": "Phishing tricks you into revealing passwords, OTPs or money by pretending to be someone you trust.",
+    "keyPoints": [
+      "Genuine organisations never ask for your password, PIN, CVV or OTP.",
+      "Hover over links before tapping - the real address is what matters, not the text.",
+      "Urgency ('act now', 'account will be blocked') is a pressure tactic.",
+      "Check the sender address, not just the display name."
+    ],
+    "redFlags": [
+      "Unexpected message about an account problem",
+      "A link to 'verify' or 'update' details",
+      "Spelling and grammar mistakes",
+      "A reply-to address different from the sender"
+    ],
+    "category": "phishing"
+  },
+  {
+    "id": "upi-qr-safety",
+    "title": "UPI and QR code safety",
+    "summary": "Scanning a QR or approving a UPI request always sends money OUT of your account - never in.",
+    "keyPoints": [
+      "You never scan a QR to RECEIVE money, a refund or a reward.",
+      "A 'collect request' pulls money from you - decline unless you started it.",
+      "Check the payee name and amount on the confirmation screen every time.",
+      "Verify a merchant's UPI ID from their official app or website."
+    ],
+    "redFlags": [
+      "Someone says 'scan this to get your refund/cashback'",
+      "A pre-filled large amount you did not enter",
+      "A QR sticker pasted over another one",
+      "Payee name looks like a business but the UPI ID is personal"
+    ],
+    "category": "payment-fraud"
+  },
+  {
+    "id": "otp-fraud",
+    "title": "OTP and card-detail fraud",
+    "summary": "An OTP is the last line of defence for your money. Anyone asking for it is a fraudster.",
+    "keyPoints": [
+      "No bank, wallet, delivery agent or official ever needs your OTP.",
+      "Do not read out card number, expiry or CVV to callers.",
+      "Fraudsters create urgency so you share the code before thinking.",
+      "If you shared an OTP, call your bank immediately to block the account."
+    ],
+    "redFlags": [
+      "'Share the code we just sent to confirm your identity'",
+      "Caller claims to be from your bank's 'security team'",
+      "Pressure to act before an account is 'blocked'"
+    ],
+    "category": "credential-theft"
+  },
+  {
+    "id": "fake-websites",
+    "title": "Recognising a fake website",
+    "summary": "Scam sites copy a brand's look but live on a slightly different address.",
+    "keyPoints": [
+      "Read the domain carefully: 'paypa1.com' is not 'paypal.com'.",
+      "A padlock (HTTPS) only means the connection is encrypted, not that the site is honest.",
+      "Type important addresses yourself instead of following links.",
+      "Be wary of login pages reached from an email or SMS link."
+    ],
+    "redFlags": [
+      "Look-alike or misspelled domain",
+      "Site asks for full card details plus OTP on one page",
+      "Newly created domain with a well-known brand name",
+      "Pop-up claiming your device is infected"
+    ],
+    "category": "phishing-page"
+  },
+  {
+    "id": "digital-arrest",
+    "title": "The 'digital arrest' scam",
+    "summary": "Callers pose as police, CBI or customs and claim you are involved in a crime to extort money.",
+    "keyPoints": [
+      "Law enforcement never arrests or fines anyone over a call or video chat.",
+      "No agency asks you to stay on a call or transfer money to 'clear your name'.",
+      "Hang up, do not share documents, and report to the cyber-crime helpline (1930 in India).",
+      "Tell an elderly family member about this scam - it targets them most."
+    ],
+    "redFlags": [
+      "'Your Aadhaar/parcel is linked to a money-laundering case'",
+      "'Do not disconnect the call or tell anyone'",
+      "Demand for a 'refundable' verification transfer",
+      "Video call with someone in a uniform / fake office"
+    ],
+    "category": "extortion"
+  },
+  {
+    "id": "job-and-prize-scams",
+    "title": "Task, job and prize scams",
+    "summary": "You are promised easy earnings or a prize, then asked to pay a fee you never get back.",
+    "keyPoints": [
+      "A real employer does not ask you to pay a registration or deposit fee.",
+      "'Like and rate' task jobs on Telegram/WhatsApp are money-laundering fronts.",
+      "You cannot win a lottery you never entered.",
+      "Small early 'payouts' are bait to get a bigger deposit from you."
+    ],
+    "redFlags": [
+      "Upfront fee, deposit or 'training kit' payment",
+      "Recruitment entirely over WhatsApp/Telegram",
+      "Guaranteed daily income for trivial work",
+      "Pressure to recruit friends"
+    ],
+    "category": "advance-fee-scam"
+  }
+]

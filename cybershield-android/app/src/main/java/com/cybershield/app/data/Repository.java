@@ -45,12 +45,27 @@ public class Repository {
     }
 
     public void analyze(String type, String content, String source, Callback cb) {
-        // 1. on-device
+        // 1. instant heuristic pre-check (keeps the UI responsive)
         LocalVerdict local = localCheck(type, content);
         cb.onLocal(local);
 
-        // 2. server
         io.execute(() -> {
+            // 2. full on-device analysis — the 22-policy engine, no network needed
+            AnalyzeResponse verdict;
+            try {
+                verdict = CyberShieldApp.get().analyzer().analyze(type, content, null);
+            } catch (Throwable t) {
+                main.post(() -> cb.onServerError("On-device analysis failed"));
+                return;
+            }
+            persist(verdict, content);
+            final AnalyzeResponse onDevice = verdict;
+            main.post(() -> cb.onServer(onDevice));
+
+            // 3. optional: let a configured backend refine the verdict (admin sync,
+            //    live feeds, LLM prose). Silent if unreachable — the on-device
+            //    result already stands.
+            if (!CyberShieldApp.get().api().store().hasSession()) return;
             try {
                 Call<AnalyzeResponse> call = CyberShieldApp.get().api().api()
                         .analyze(new AnalyzeRequest(type, content, source));
@@ -59,12 +74,9 @@ public class Repository {
                     AnalyzeResponse server = resp.body();
                     persist(server, content);
                     main.post(() -> cb.onServer(server));
-                } else {
-                    main.post(() -> cb.onServerError("Server returned " + resp.code()));
                 }
-            } catch (Exception e) {
-                persistLocalOnly(local, type, content);
-                main.post(() -> cb.onServerError("Offline — showing on-device check only"));
+            } catch (Exception ignored) {
+                // offline / no backend — on-device verdict is authoritative
             }
         });
     }
@@ -108,19 +120,4 @@ public class Repository {
         }
     }
 
-    private void persistLocalOnly(LocalVerdict v, String type, String content) {
-        try {
-            ScanEntity e = new ScanEntity();
-            e.id = UUID.randomUUID().toString();
-            e.type = type;
-            e.snippet = Redact.snippet(content);
-            e.riskScore = v.score;
-            e.riskLevel = v.level.name();
-            e.priority = v.priority();
-            e.serverChecked = false;
-            e.createdAt = System.currentTimeMillis();
-            db.scanDao().insert(e);
-        } catch (Exception ignored) {
-        }
-    }
 }

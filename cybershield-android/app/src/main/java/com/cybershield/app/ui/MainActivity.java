@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             b.editText.setText("");
         });
 
+        b.btnOverview.setOnClickListener(v -> startActivity(new Intent(this, OverviewActivity.class)));
         b.btnAllHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         b.btnProtection.setOnClickListener(v -> startActivity(new Intent(this, OnboardingActivity.class)));
 
@@ -160,6 +161,13 @@ public class MainActivity extends AppCompatActivity {
 
     /** Ask the backend whether this account is an admin; hide the Reports tab otherwise. */
     private void refreshRole() {
+        if (!store.hasAccount()) {           // offline / guest — no admin features
+            isAdmin = false;
+            android.view.MenuItem reports = b.bottomNav.getMenu().findItem(R.id.nav_reports);
+            if (reports != null) reports.setVisible(false);
+            b.btnOverview.setVisibility(View.GONE);
+            return;
+        }
         CyberShieldApp.get().api().api().me().enqueue(new Callback<>() {
             @Override public void onResponse(@androidx.annotation.NonNull Call<java.util.Map<String, Object>> call,
                                              @androidx.annotation.NonNull Response<java.util.Map<String, Object>> resp) {
@@ -167,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 isAdmin = Boolean.TRUE.equals(admin);
                 android.view.MenuItem reports = b.bottomNav.getMenu().findItem(R.id.nav_reports);
                 if (reports != null) reports.setVisible(isAdmin);
+                b.btnOverview.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
             }
             @Override public void onFailure(@androidx.annotation.NonNull Call<java.util.Map<String, Object>> call,
                                             @androidx.annotation.NonNull Throwable t) { /* keep last known role */ }
@@ -190,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
     /** If the short-lived access token is missing/expired, get a new one from the refresh token. */
     private void ensureFreshSession() {
-        if (store.token() != null) { loadEducation(); return; }
+        if (store.token() != null || !store.hasAccount()) { loadEducation(); return; }
         Executors.newSingleThreadExecutor().execute(() -> {
             String fresh = CyberShieldApp.get().api().tryRefresh();
             main.post(() -> {
@@ -245,15 +254,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadEducation() {
+        eduAdapter.set(com.cybershield.app.data.EducationCatalog.bundled(this));   // offline-first
         CyberShieldApp.get().api().api().educationModules().enqueue(new Callback<>() {
             @Override
             public void onResponse(@androidx.annotation.NonNull Call<List<EduAdapter.Module>> call,
                                    @androidx.annotation.NonNull Response<List<EduAdapter.Module>> resp) {
-                if (resp.isSuccessful() && resp.body() != null) eduAdapter.set(resp.body());
+                if (resp.isSuccessful() && resp.body() != null && !resp.body().isEmpty()) {
+                    eduAdapter.set(resp.body());
+                }
             }
             @Override
             public void onFailure(@androidx.annotation.NonNull Call<List<EduAdapter.Module>> call,
-                                  @androidx.annotation.NonNull Throwable t) { /* offline: section stays empty */ }
+                                  @androidx.annotation.NonNull Throwable t) { /* bundled copy stays */ }
         });
     }
 }

@@ -34,11 +34,35 @@
         <TextView android:id="@+id/stAccessibility" style="@style/OnbStep" android:text="3 · Turn on the Cyber Shield accessibility service (payment-screen watch)" />
         <com.google.android.material.button.MaterialButton android:id="@+id/btnAccessibility" style="@style/OnbBtn" android:text="Open accessibility setting" />
 
+        <TextView android:id="@+id/stNotif" style="@style/OnbStep" android:text="4 · Allow notification access (auto-scan incoming email)" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnNotif" style="@style/OnbBtn" android:text="Open notification-access setting" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="24dp" android:background="@color/edge" />
+
+        <TextView style="@style/OnbStep" android:text="Browser protection" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swWatchBrowsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Warn me when I open a dangerous website in Chrome / any browser"
+            android:textColor="@color/text" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swStrict"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Strict: also stop me on sites Cyber Shield can't verify (more interruptions)"
+            android:textColor="@color/text" />
+
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swBiometric"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
             android:checked="true"
             android:text="Require fingerprint / face unlock to open the app"
             android:textColor="@color/text" />
@@ -48,6 +72,25 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Note: on Android 13+ you may first need to allow 'Restricted settings' for this app from its App info screen."
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="20dp" android:background="@color/edge" />
+
+        <TextView style="@style/OnbStep" android:text="Test the shield" />
+
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnTestSms"
+            style="@style/OnbBtn" android:text="▶ Simulate a scam SMS" />
+
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnTestEmail"
+            style="@style/OnbBtn" android:text="▶ Simulate a phishing email" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Runs the real detection pipeline on a sample message and posts the alert, so you can see what a caught scam looks like without waiting for a real one."
             android:textColor="@color/muted"
             android:textSize="12sp" />
     </LinearLayout>

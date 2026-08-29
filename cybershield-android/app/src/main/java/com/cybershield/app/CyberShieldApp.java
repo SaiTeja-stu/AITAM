@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.cybershield.app.data.AppDatabase;
 import com.cybershield.app.net.ApiModule;
+import com.cybershield.core.OnDeviceAnalyzer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -21,6 +22,7 @@ public class CyberShieldApp extends Application {
     private static CyberShieldApp instance;
     private AppDatabase db;
     private ApiModule api;
+    private volatile OnDeviceAnalyzer analyzer;
     private volatile String lastCrash;
 
     public static CyberShieldApp get() {
@@ -59,6 +61,16 @@ public class CyberShieldApp extends Application {
 
     public AppDatabase db() {
         return db;
+    }
+
+    /** The on-device detection engine (built lazily on first use). */
+    public OnDeviceAnalyzer analyzer() {
+        if (analyzer == null) {
+            synchronized (this) {
+                if (analyzer == null) analyzer = new OnDeviceAnalyzer(this);
+            }
+        }
+        return analyzer;
     }
 
     public ApiModule api() {

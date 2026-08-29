@@ -89,11 +89,25 @@ public class VerdictActivity extends AppCompatActivity {
     }
 
     private void renderServer(AnalyzeResponse r) {
-        b.badge.setText(r.priority + " · " + r.riskLevel.replace('_', ' '));
-        b.badge.setBackgroundColor(colorForLevel(r.riskLevel));
+        boolean noSignals = r.riskScore == 0
+                && (r.signals == null || r.signals.stream().noneMatch(s -> s.weight > 0));
+        boolean unverifiedClean = "SAFE".equals(r.riskLevel) && !r.trusted && noSignals;
+
+        String badgeText = unverifiedClean ? "UNVERIFIED" : r.priority + " · " + r.riskLevel.replace('_', ' ');
+        int color = unverifiedClean ? Color.parseColor("#93A0BC") : colorForLevel(r.riskLevel);
+        b.badge.setText(badgeText);
+        b.badge.setBackgroundColor(color);
         b.score.setText(String.valueOf(r.riskScore));
-        b.score.setTextColor(colorForLevel(r.riskLevel));
-        b.wording.setText("“" + r.wording + "”  ·  confidence " + r.confidence);
+        b.score.setTextColor(color);
+
+        if (r.trusted) {
+            b.wording.setText("On Cyber Shield's verified safe list — no warning signs.");
+        } else if (unverifiedClean) {
+            b.wording.setText("No warning signs found — but we could NOT confirm this is safe. "
+                    + "Be careful before logging in or paying.");
+        } else {
+            b.wording.setText("“" + r.wording + "”  ·  " + r.confidence + "% confident");
+        }
 
         b.paymentWarn.setVisibility(r.initiatesPayment ? View.VISIBLE : View.GONE);
         if (r.payment != null) {

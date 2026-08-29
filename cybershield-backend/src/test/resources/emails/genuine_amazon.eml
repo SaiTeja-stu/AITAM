@@ -1,0 +1,17 @@
+From: "Amazon.in" <shipment-tracking@amazon.in>
+Reply-To: no-reply@amazon.in
+To: customer@example.com
+Subject: Your Amazon.in order has shipped
+Date: Mon, 25 Aug 2025 09:14:00 +0530
+Authentication-Results: mx.google.com; spf=pass smtp.mailfrom=amazon.in; dkim=pass header.d=amazon.in; dmarc=pass header.from=amazon.in
+Received: from smtp-fw-9101.amazon.com (smtp-fw-9101.amazon.com [207.171.184.25]) by mx.google.com with ESMTPS
+
+Hello,
+
+Your order #402-7712345-0098765 has shipped and is expected to arrive on Tuesday.
+
+You can track your package here:
+https://www.amazon.in/gp/your-account/order-details
+
+Thanks for shopping with us.
+Amazon.in

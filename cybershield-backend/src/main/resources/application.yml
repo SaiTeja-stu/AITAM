@@ -88,7 +88,7 @@ cybershield:
     lock-minutes: 15
     require-email-verification: ${CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION:true}
     unverified-grace-hours: 48
-    reset-url: ${CYBERSHIELD_RESET_URL:}     # e.g. http://localhost:5173/reset
+    reset-url: ${CYBERSHIELD_RESET_URL:}     # Android deep link: cybershield://reset
     cleanup-cron: "0 15 * * * *"
   otp:
     ttl-minutes: 15
@@ -110,6 +110,8 @@ cybershield:
     auth-per-15min: 10
   feeds:
     enabled: ${CYBERSHIELD_FEEDS_ENABLED:true}  # live reputation lookups (need API keys below)
+  rdap:
+    enabled: ${CYBERSHIELD_RDAP_ENABLED:true}   # WHOIS/RDAP domain-age lookup (public, no key)
   llm:
     enabled: ${CYBERSHIELD_LLM_ENABLED:true}    # Claude explanation rewrite (needs ANTHROPIC_API_KEY)
     model: ${CYBERSHIELD_LLM_MODEL:claude-haiku-4-5-20251001}

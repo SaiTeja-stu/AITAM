@@ -98,6 +98,29 @@
             android:layout_height="wrap_content"
             android:text="Forgot password?" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/edge" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOffline"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Use offline — no account" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:textColor="@color/muted"
+            android:textSize="12sp"
+            android:text="All scam detection runs on your phone. An account only adds cross-device history and the admin dashboard." />
+
         <TextView
             android:id="@+id/serverInfo"
             android:layout_width="match_parent"

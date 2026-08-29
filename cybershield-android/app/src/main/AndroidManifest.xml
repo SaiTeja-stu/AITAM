@@ -57,6 +57,7 @@
         <activity android:name=".ui.QueueActivity" android:exported="false" />
         <activity android:name=".ui.ReportsActivity" android:exported="false" />
         <activity android:name=".ui.EducationListActivity" android:exported="false" />
+        <activity android:name=".ui.OverviewActivity" android:exported="false" />
 
         <!-- Receives text shared from ANY app (WhatsApp, SMS, browsers, social) -->
         <activity
@@ -93,6 +94,17 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Auto-scan email: reads the mail app's new-message notifications (on-device). -->
+        <service
+            android:name=".mailwatch.EmailNotificationListener"
+            android:exported="false"
+            android:label="Cyber Shield — email watch"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <!-- Foreground service that hosts the blocking overlay while shield is active. -->

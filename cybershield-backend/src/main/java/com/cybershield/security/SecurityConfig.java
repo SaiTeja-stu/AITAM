@@ -74,6 +74,7 @@ public class SecurityConfig {
                                  "/assets/**", "/dashboard/**", "/vite.svg").permitAll()
                 .requestMatchers("/api/v1/admin/**", "/api/v1/stats/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").authenticated()
+                .requestMatchers("/api/analyze-url", "/api/url-scans", "/api/analyze-email").authenticated()
                 .anyRequest().denyAll())
             .exceptionHandling(e -> e
                 .authenticationEntryPoint((req, res, ex) -> writeProblem(res, 401, "Unauthorized",

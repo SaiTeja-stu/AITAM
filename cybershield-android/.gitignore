@@ -10,3 +10,7 @@
 local.properties
 app/build/
 gradle/wrapper/*.zip
+
+# archived (non-built) web dashboard
+legacy-web-dashboard/node_modules/
+legacy-web-dashboard/dist/

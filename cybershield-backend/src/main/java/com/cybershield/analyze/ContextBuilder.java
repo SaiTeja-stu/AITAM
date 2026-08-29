@@ -47,6 +47,7 @@ public class ContextBuilder {
         boolean network = false;
         UpiUri upi = null;
         PayloadKind qrKind = null;
+        com.cybershield.mail.EmailMessage email = null;
 
         switch (type) {
             case URL, WEBPAGE -> {
@@ -76,10 +77,19 @@ public class ContextBuilder {
                     builder.text(raw);
                 }
             }
-            case EMAIL, SMS, SOCIAL -> builder.text(raw);
+            case EMAIL -> {
+                email = com.cybershield.mail.EmailParser.parse(raw);
+                builder.email(email);
+                builder.text(email.hadHeaders() ? email.body() : raw);   // keyword policies see the body only
+            }
+            case SMS, SOCIAL -> builder.text(raw);
         }
 
-        List<UrlParts> embedded = extractUrls(raw);
+        String forUrlScan = raw;
+        if (email != null) {
+            forUrlScan = email.body() + "\n" + String.join("\n", email.links());
+        }
+        List<UrlParts> embedded = extractUrls(forUrlScan);
         if (!embedded.isEmpty()) {
             builder.embeddedUrls(embedded);
         }

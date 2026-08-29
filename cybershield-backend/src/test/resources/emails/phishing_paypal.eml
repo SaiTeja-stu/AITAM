@@ -1,0 +1,22 @@
+From: "PayPal Service" <security@paypa1-account-verify.tk>
+Reply-To: paypal.recovery.team@gmail.com
+To: customer@example.com
+Subject: Urgent: Your account has been limited - action required within 24 hours
+Date: Tue, 26 Aug 2025 03:41:12 +0000
+Authentication-Results: mx.google.com; spf=fail smtp.mailfrom=paypa1-account-verify.tk; dkim=fail header.d=paypa1-account-verify.tk; dmarc=fail header.from=paypa1-account-verify.tk
+Received: from unknown (mail.paypa1-account-verify.tk [45.133.1.9]) by mx.google.com with ESMTP
+
+Dear Customer,
+
+We have detected unusual activity on your account. For your protection your
+account access has been limited.
+
+You must verify your identity immediately or your account will be permanently
+suspended within 24 hours:
+
+http://paypa1-account-verify.tk/webscr?cmd=_login-verify&dispatch=8a7f2c
+
+Please confirm your password, card number and the OTP sent to your phone to
+restore full access. Failure to comply will result in permanent closure.
+
+PayPal Security Team

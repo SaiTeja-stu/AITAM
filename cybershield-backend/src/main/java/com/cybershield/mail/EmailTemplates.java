@@ -40,8 +40,8 @@ final class EmailTemplates {
 
     static String welcome(String name) {
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>Your Cyber Shield account is now active. You can sign in on the app, the browser "
-                + "extension, or the dashboard.</p>"
+                + "<p>Your Cyber Shield account is now active. You can sign in on the Android app "
+                + "or the browser extension.</p>"
                 + "<p>We'll email you when a new device signs in, and when we block a serious threat "
                 + "aimed at you.</p>";
     }
@@ -50,16 +50,16 @@ final class EmailTemplates {
         return "<p>Hi " + esc(name) + ",</p>"
                 + "<p>Your Cyber Shield account was just signed in at <b>" + esc(when) + "</b>.</p>"
                 + "<p>If this was you, no action is needed. If it wasn't, "
-                + "<b>reset your password immediately</b> from the app or dashboard.</p>";
+                + "<b>reset your password immediately</b> from the app.</p>";
     }
 
     static String passwordReset(String name, String c, String link, String expires) {
         String linkBtn = (link == null || link.isBlank()) ? "" :
                 "<p style=\"margin:16px 0\"><a href=\"" + esc(link) + "\" "
                 + "style=\"background:#38bdf8;color:#0b1020;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600\">"
-                + "Open reset page</a></p>";
+                + "Open in the app</a></p>";
         return "<p>Hi " + esc(name) + ",</p>"
-                + "<p>We received a request to reset your password. Enter this code in the app/dashboard:</p>"
+                + "<p>We received a request to reset your password. Enter this code in the app:</p>"
                 + code(c)
                 + linkBtn
                 + "<p style=\"color:#93a0bc\">The code expires at <b>" + esc(expires) + "</b>. "

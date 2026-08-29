@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.cybershield.app.CyberShieldApp;
+import com.cybershield.app.data.EducationCatalog;
 import com.cybershield.app.databinding.ActivityEducationListBinding;
 
 import java.util.List;
@@ -36,18 +37,26 @@ public class EducationListActivity extends AppCompatActivity {
     }
 
     private void load() {
+        // Bundled copy first so the screen is never empty, then let the backend refresh it.
+        showOffline();
         CyberShieldApp.get().api().api().educationModules().enqueue(new Callback<>() {
             @Override public void onResponse(@NonNull Call<List<EduAdapter.Module>> c,
                                              @NonNull Response<List<EduAdapter.Module>> r) {
-                List<EduAdapter.Module> mods = r.isSuccessful() ? r.body() : null;
-                adapter.set(mods);
-                boolean empty = mods == null || mods.isEmpty();
-                b.empty.setText(empty ? "Couldn't load modules — is the backend reachable?" : "");
-                b.empty.setVisibility(empty ? View.VISIBLE : View.GONE);
+                if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                    adapter.set(r.body());
+                    b.empty.setVisibility(View.GONE);
+                }
             }
             @Override public void onFailure(@NonNull Call<List<EduAdapter.Module>> c, @NonNull Throwable t) {
-                b.empty.setText("Couldn't load modules — is the backend reachable?");
+                showOffline();
             }
         });
+    }
+
+    private void showOffline() {
+        List<EduAdapter.Module> mods = EducationCatalog.bundled(this);
+        adapter.set(mods);
+        b.empty.setVisibility(mods.isEmpty() ? View.VISIBLE : View.GONE);
+        if (mods.isEmpty()) b.empty.setText("No modules available.");
     }
 }

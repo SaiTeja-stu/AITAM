@@ -282,4 +282,90 @@ class ApiSecurityIT {
                 "{\"type\":\"URL\",\"content\":\"https://brand-new-scam-site-xyz.tk/anything\"}", token);
         assertThat(mapper.readTree(check.body()).get("riskLevel").asText()).isEqualTo("MALICIOUS");
     }
+
+    // ---------- URL scanner endpoint (spec-shaped) ----------
+
+    @Test
+    void analyze_url_endpoint_requires_auth() throws Exception {
+        var r = send("POST", "/api/analyze-url", "{\"url\":\"https://example.com\"}", null);
+        assertThat(r.statusCode()).isEqualTo(401);
+    }
+
+    @Test
+    void analyze_url_endpoint_returns_evidence_and_five_level_scale() throws Exception {
+        var r = send("POST", "/api/analyze-url",
+                "{\"url\":\"http://paypa1-verify-login.tk/webscr?cmd=_login-run\"}", adminToken());
+        assertThat(r.statusCode()).isEqualTo(200);
+        JsonNode b = mapper.readTree(r.body());
+        assertThat(b.get("risk_score").asInt()).isGreaterThan(20);
+        assertThat(b.get("risk_level").asText())
+                .isIn("LOW_RISK", "SUSPICIOUS", "HIGH_RISK", "CRITICAL");
+        assertThat(b.get("indicators")).isNotEmpty();
+        assertThat(b.get("recommendations")).isNotEmpty();
+        assertThat(b.has("threat_intelligence")).isTrue();
+        // the ML model must have contributed a signal
+        boolean mlFired = false;
+        for (JsonNode ind : b.get("indicators")) {
+            if ("ML_URL_RISK".equals(ind.path("type").asText())) mlFired = true;
+        }
+        assertThat(mlFired).as("ML_URL_RISK indicator present").isTrue();
+    }
+
+    @Test
+    void analyze_url_endpoint_flags_egregious_url_high() throws Exception {
+        var r = send("POST", "/api/analyze-url",
+                "{\"url\":\"https://paypal.com@secure-login-verify-account.tk/kyc/confirm\"}", adminToken());
+        JsonNode b = mapper.readTree(r.body());
+        assertThat(b.get("risk_score").asInt()).isGreaterThanOrEqualTo(50);
+        assertThat(b.get("risk_level").asText()).isIn("SUSPICIOUS", "HIGH_RISK", "CRITICAL");
+    }
+
+    @Test
+    void analyze_url_endpoint_stays_calm_on_a_clean_link() throws Exception {
+        var r = send("POST", "/api/analyze-url", "{\"url\":\"https://www.google.com\"}", adminToken());
+        JsonNode b = mapper.readTree(r.body());
+        assertThat(b.get("risk_level").asText()).isIn("SAFE", "LOW_RISK");
+        assertThat(b.get("risk_score").asInt()).isLessThan(25);
+    }
+
+    @Test
+    void analyze_url_rejects_blank() throws Exception {
+        var r = send("POST", "/api/analyze-url", "{\"url\":\"\"}", adminToken());
+        assertThat(r.statusCode()).isEqualTo(400);
+    }
+
+    // ---------- Email scanner ----------
+
+    private String emailFixture(String name) throws Exception {
+        try (var in = getClass().getResourceAsStream("/emails/" + name)) {
+            return new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
+
+    @Test
+    void analyze_email_flags_phishing_with_auth_and_sender_evidence() throws Exception {
+        String body = mapper.writeValueAsString(java.util.Map.of("raw", emailFixture("phishing_paypal.eml")));
+        var r = send("POST", "/api/analyze-email", body, adminToken());
+        assertThat(r.statusCode()).isEqualTo(200);
+        JsonNode b = mapper.readTree(r.body());
+
+        assertThat(b.get("risk_score").asInt()).isGreaterThanOrEqualTo(60);
+        assertThat(b.get("verdict").asText()).isEqualTo("PHISHING");
+        assertThat(b.get("authentication").get("dmarc").asText()).isEqualTo("FAIL");
+        assertThat(b.get("sender").get("domain").asText()).isEqualTo("paypa1-account-verify.tk");
+
+        java.util.Set<String> types = new java.util.HashSet<>();
+        for (JsonNode i : b.get("indicators")) types.add(i.get("type").asText());
+        assertThat(types).contains("FAILED_EMAIL_AUTH", "DISPLAY_NAME_SPOOF");
+    }
+
+    @Test
+    void analyze_email_stays_calm_on_a_genuine_message() throws Exception {
+        String body = mapper.writeValueAsString(java.util.Map.of("raw", emailFixture("genuine_amazon.eml")));
+        var r = send("POST", "/api/analyze-email", body, adminToken());
+        JsonNode b = mapper.readTree(r.body());
+        assertThat(b.get("risk_level").asText()).isIn("SAFE", "LOW_RISK");
+        assertThat(b.get("verdict").asText()).isIn("LOOKS_LEGITIMATE", "SUSPICIOUS");
+        assertThat(b.get("authentication").get("spf").asText()).isEqualTo("PASS");
+    }
 }
