@@ -3,6 +3,8 @@ FROM eclipse-temurin:21-jdk AS build
 WORKDIR /src
 COPY gradlew settings.gradle build.gradle ./
 COPY gradle ./gradle
+# the tracked wrapper points at a local (git-ignored) zip; use the official download instead
+RUN sed -i 's#^distributionUrl=.*#distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip#' gradle/wrapper/gradle-wrapper.properties
 RUN chmod +x gradlew && ./gradlew --no-daemon dependencies > /dev/null 2>&1 || true
 COPY src ./src
 RUN ./gradlew --no-daemon bootJar -x test \
