@@ -19,3 +19,5 @@ services:
         value: "false"       # no SMTP configured on the free tier
       - key: CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION
         value: "false"
+      - key: MANAGEMENT_HEALTH_MAIL_ENABLED
+        value: "false"       # otherwise /actuator/health reports DOWN (no SMTP) and Render kills the deploy
