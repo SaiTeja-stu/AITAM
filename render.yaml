@@ -16,7 +16,11 @@ services:
       - key: CYBERSHIELD_ADMIN_PASSWORD
         sync: false          # you type this in the Render dashboard
       - key: CYBERSHIELD_MAIL_ENABLED
-        value: "false"       # no SMTP configured on the free tier
+        value: "true"        # sends through Brevo's HTTPS API (Render blocks SMTP on the free tier)
+      - key: BREVO_API_KEY
+        sync: false          # paste your Brevo API key in the Render dashboard
+      - key: MAIL_FROM
+        sync: false          # a sender address you verified in Brevo (e.g. your Gmail)
       - key: CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION
         value: "false"
       - key: MANAGEMENT_HEALTH_MAIL_ENABLED

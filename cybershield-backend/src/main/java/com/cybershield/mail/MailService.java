@@ -34,11 +34,19 @@ public class MailService {
     private final boolean enabled;
     private final String from;
     private final String appName;
+    private final String brevoKey;
+
+    private static final java.net.http.HttpClient HTTP = java.net.http.HttpClient.newBuilder()
+            .connectTimeout(java.time.Duration.ofSeconds(8)).build();
+    private static final com.fasterxml.jackson.databind.ObjectMapper MAPPER =
+            new com.fasterxml.jackson.databind.ObjectMapper();
 
     public MailService(ObjectProvider<JavaMailSender> senderProvider,
                        @Value("${cybershield.mail.enabled:true}") boolean enabled,
                        @Value("${cybershield.mail.from:${SMTP_USERNAME:no-reply@cybershield.local}}") String from,
-                       @Value("${cybershield.app-name:Secure Me}") String appName) {
+                       @Value("${cybershield.app-name:Secure Me}") String appName,
+                       @Value("${BREVO_API_KEY:}") String brevoKey) {
+        this.brevoKey = brevoKey == null ? "" : brevoKey.trim();
         this.senderProvider = senderProvider;
         this.enabled = enabled;
         this.from = from;
@@ -48,6 +56,10 @@ public class MailService {
     private void send(String to, String subject, String html) {
         if (!enabled || to == null || to.isBlank()) {
             log.info("mail disabled/skip: would send '{}' to {}", subject, mask(to));
+            return;
+        }
+        if (!brevoKey.isEmpty()) {          // HTTPS email API: works where outbound SMTP ports are blocked
+            sendViaBrevo(to, subject, html);
             return;
         }
         JavaMailSender sender = senderProvider.getIfAvailable();
@@ -66,6 +78,34 @@ public class MailService {
             securityLog.info("mail sent subject='{}' to={}", subject, mask(to));
         } catch (Exception e) {
             log.warn("mail send failed ('{}' to {}): {}", subject, mask(to), e.toString());
+        }
+    }
+
+    private void sendViaBrevo(String to, String subject, String html) {
+        try {
+            java.util.Map<String, Object> body = new java.util.LinkedHashMap<>();
+            body.put("sender", java.util.Map.of("email", from, "name", appName));
+            body.put("to", java.util.List.of(java.util.Map.of("email", to)));
+            body.put("subject", subject);
+            body.put("htmlContent", EmailTemplates.wrap(appName, html));
+            java.net.http.HttpRequest req = java.net.http.HttpRequest
+                    .newBuilder(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .timeout(java.time.Duration.ofSeconds(15))
+                    .header("api-key", brevoKey)
+                    .header("content-type", "application/json")
+                    .header("accept", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(MAPPER.writeValueAsString(body)))
+                    .build();
+            java.net.http.HttpResponse<String> res = HTTP.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() / 100 == 2) {
+                securityLog.info("mail sent (brevo) subject='{}' to={}", subject, mask(to));
+            } else {
+                String b = res.body() == null ? "" : res.body();
+                log.warn("brevo send failed ('{}' to {}): HTTP {} {}", subject, mask(to), res.statusCode(),
+                        b.substring(0, Math.min(200, b.length())));
+            }
+        } catch (Exception e) {
+            log.warn("brevo send failed ('{}' to {}): {}", subject, mask(to), e.toString());
         }
     }
 
