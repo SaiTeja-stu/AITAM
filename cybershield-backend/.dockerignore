@@ -1,0 +1,7 @@
+build
+bin
+.gradle
+data
+ml
+*.log
+*.db

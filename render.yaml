@@ -1,0 +1,21 @@
+# One-click deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: cybershield-backend
+    runtime: docker
+    rootDir: cybershield-backend
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: CYBERSHIELD_JWT_SECRET
+        generateValue: true
+      - key: CYBERSHIELD_HMAC_SECRET
+        generateValue: true
+      - key: CYBERSHIELD_ADMIN_USER
+        value: admin
+      - key: CYBERSHIELD_ADMIN_PASSWORD
+        sync: false          # you type this in the Render dashboard
+      - key: CYBERSHIELD_MAIL_ENABLED
+        value: "false"       # no SMTP configured on the free tier
+      - key: CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION
+        value: "false"
