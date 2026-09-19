@@ -1,7 +1,7 @@
 # ---- build ----
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /src
-COPY gradlew settings.gradle build.gradle gradle.properties ./
+COPY gradlew settings.gradle build.gradle ./
 COPY gradle ./gradle
 RUN chmod +x gradlew && ./gradlew --no-daemon dependencies > /dev/null 2>&1 || true
 COPY src ./src
