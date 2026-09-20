@@ -18,6 +18,6 @@ WORKDIR /app
 COPY --from=build /app.jar app.jar
 ENV CYBERSHIELD_DB_PATH=/data/cybershield.db \
     CYBERSHIELD_ARCHIVE_DIR=/data/archive \
-    JAVA_OPTS="-Xmx350m -XX:+UseSerialGC"
+    JAVA_OPTS="-Xmx340m -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k -Djava.security.egd=file:/dev/./urandom"
 EXPOSE 8080
 ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar app.jar"]
