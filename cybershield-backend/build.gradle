@@ -62,8 +62,14 @@ dependencies {
     // OpenAPI docs
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
+    // DNS resolution for live SPF / DMARC verification
+    implementation 'dnsjava:dnsjava:3.6.0'
+
     // JSON structured logging for the cold-tier rotating log
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    // Signed forensic evidence certificate export (Section 65B PDF)
+    implementation 'org.apache.pdfbox:pdfbox:2.0.31'
 
     // Tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
