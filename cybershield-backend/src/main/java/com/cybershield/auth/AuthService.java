@@ -62,19 +62,36 @@ public class AuthService {
 
     // ---------------- registration ----------------
 
-    /** Always looks the same to the caller, whether or not the details were free. */
+    public boolean requiresEmailVerification() { return requireEmailVerification; }
+
+    public static final String TERMS_VERSION = "2026-09";
+
+    public enum RegisterResult { CREATED, RESENT, EMAIL_TAKEN, USERNAME_TAKEN, BAD_EMAIL }
+
+    /**
+     * Creates the account. The caller (the user's own app) is told plainly when the email or
+     * username is already taken, so they can sign in or reset their password instead.
+     */
     @Transactional
-    public void register(String email, String username, String rawPassword, String displayName, String ip) {
+    public RegisterResult register(String email, String username, String rawPassword, String displayName, String ip) {
         String e = normEmail(email);
         if (!EMAIL_RE.matcher(e).matches()) {
-            // still return generic - but nothing is created / sent
             securityLog.info("register rejected (bad email format) ip={}", ip);
-            return;
+            return RegisterResult.BAD_EMAIL;
         }
-        if (users.existsByEmail(e) || users.existsByUsername(username)) {
-            securityLog.info("register attempt for existing email/username ip={}", ip);
-            issueAndSendVerification(e, displayName); // resend so a real owner can still verify
-            return;
+        Optional<UserAccount> existing = users.findByEmail(e);
+        if (existing.isPresent()) {
+            UserAccount ex = existing.get();
+            if (requireEmailVerification && !ex.isEmailVerified()) {
+                issueAndSendVerification(e, ex.getDisplayName()); // sign-up started but never finished
+                return RegisterResult.RESENT;
+            }
+            securityLog.info("register attempt for existing email ip={}", ip);
+            return RegisterResult.EMAIL_TAKEN;
+        }
+        if (users.existsByUsername(username)) {
+            securityLog.info("register attempt for existing username ip={}", ip);
+            return RegisterResult.USERNAME_TAKEN;
         }
         UserAccount u = new UserAccount();
         u.setId(UUID.randomUUID().toString());
@@ -84,19 +101,25 @@ public class AuthService {
         u.setPasswordHash(encoder.encode(rawPassword));
         u.setRole("ROLE_USER");
         u.setEmailVerified(!requireEmailVerification);
+        u.setTermsAcceptedAt(Instant.now());
+        u.setTermsVersion(TERMS_VERSION);
         users.save(u);
-        securityLog.info("user registered id={} ip={} (verification required={})", u.getId(), ip, requireEmailVerification);
+        securityLog.info("user registered id={} ip={} terms={} (verification required={})",
+                u.getId(), ip, TERMS_VERSION, requireEmailVerification);
 
         if (requireEmailVerification) {
             issueAndSendVerification(e, u.getDisplayName());
         } else {
             mail.sendWelcome(e, u.getDisplayName());
         }
+        return RegisterResult.CREATED;
     }
 
-    private void issueAndSendVerification(String email, String name) {
-        otp.issue(email, OtpChallenge.Purpose.VERIFY_EMAIL).ifPresent(issued ->
-                mail.sendVerificationOtp(email, name, issued.code(), issued.expiresAt()));
+    /** @return false when the per-hour code limit was hit and nothing was sent. */
+    private boolean issueAndSendVerification(String email, String name) {
+        Optional<OtpService.Issued> issued = otp.issue(email, OtpChallenge.Purpose.VERIFY_EMAIL);
+        issued.ifPresent(i -> mail.sendVerificationOtp(email, name, i.code(), i.expiresAt()));
+        return issued.isPresent();
     }
 
     public enum SimpleResult { OK, INVALID, RATE_LIMITED, NOT_APPLICABLE }
@@ -119,12 +142,14 @@ public class AuthService {
         return SimpleResult.OK;
     }
 
-    public SimpleResult resendVerification(String email) {
+    public enum ResendResult { SENT, NO_ACCOUNT, ALREADY_VERIFIED, RATE_LIMITED }
+
+    public ResendResult resendVerification(String email) {
         String e = normEmail(email);
-        users.findByEmail(e).ifPresent(u -> {
-            if (!u.isEmailVerified()) issueAndSendVerification(e, u.getDisplayName());
-        });
-        return SimpleResult.OK; // generic
+        Optional<UserAccount> u = users.findByEmail(e);
+        if (u.isEmpty()) return ResendResult.NO_ACCOUNT;
+        if (u.get().isEmailVerified()) return ResendResult.ALREADY_VERIFIED;
+        return issueAndSendVerification(e, u.get().getDisplayName()) ? ResendResult.SENT : ResendResult.RATE_LIMITED;
     }
 
     // ---------------- login ----------------
@@ -184,17 +209,21 @@ public class AuthService {
 
     // ---------------- password reset ----------------
 
-    /** Generic response regardless of whether the email is registered. */
-    public void forgotPassword(String email, String ip) {
+    public enum ForgotResult { SENT, NO_ACCOUNT, RATE_LIMITED }
+
+    public ForgotResult forgotPassword(String email, String ip) {
         String e = normEmail(email);
-        users.findByEmail(e).ifPresent(u ->
-                otp.issue(e, OtpChallenge.Purpose.RESET_PASSWORD).ifPresent(issued -> {
-                    String link = resetBaseUrl.isBlank() ? null
-                            : resetBaseUrl + "?email=" + java.net.URLEncoder.encode(e, java.nio.charset.StandardCharsets.UTF_8)
-                              + "&code=" + issued.code();
-                    mail.sendPasswordResetOtp(e, u.getDisplayName(), issued.code(), link, issued.expiresAt());
-                }));
-        securityLog.info("password reset requested ip={}", ip);
+        Optional<UserAccount> found = users.findByEmail(e);
+        securityLog.info("password reset requested ip={} found={}", ip, found.isPresent());
+        if (found.isEmpty()) return ForgotResult.NO_ACCOUNT;
+        UserAccount u = found.get();
+        Optional<OtpService.Issued> issued = otp.issue(e, OtpChallenge.Purpose.RESET_PASSWORD);
+        if (issued.isEmpty()) return ForgotResult.RATE_LIMITED;
+        String link = resetBaseUrl.isBlank() ? null
+                : resetBaseUrl + "?email=" + java.net.URLEncoder.encode(e, java.nio.charset.StandardCharsets.UTF_8)
+                  + "&code=" + issued.get().code();
+        mail.sendPasswordResetOtp(e, u.getDisplayName(), issued.get().code(), link, issued.get().expiresAt());
+        return ForgotResult.SENT;
     }
 
     @Transactional

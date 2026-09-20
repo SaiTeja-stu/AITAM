@@ -45,7 +45,19 @@ public class UserAccount {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    /** When the user accepted the Terms & Conditions, and which version (consent record). */
+    @Column
+    private Instant termsAcceptedAt;
+
+    @Column(length = 16)
+    private String termsVersion;
+
     public UserAccount() {}
+
+    public Instant getTermsAcceptedAt() { return termsAcceptedAt; }
+    public void setTermsAcceptedAt(Instant termsAcceptedAt) { this.termsAcceptedAt = termsAcceptedAt; }
+    public String getTermsVersion() { return termsVersion; }
+    public void setTermsVersion(String termsVersion) { this.termsVersion = termsVersion; }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

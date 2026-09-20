@@ -22,6 +22,6 @@ services:
       - key: MAIL_FROM
         sync: false          # a sender address you verified in Brevo (e.g. your Gmail)
       - key: CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION
-        value: "false"
+        value: "true"        # email works now (Brevo), so verify addresses with a 6-digit code
       - key: MANAGEMENT_HEALTH_MAIL_ENABLED
         value: "false"       # otherwise /actuator/health reports DOWN (no SMTP) and Render kills the deploy

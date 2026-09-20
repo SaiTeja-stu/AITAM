@@ -1,7 +1,9 @@
 package com.cybershield.web.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -21,7 +23,11 @@ public final class AuthDtos {
             String displayName,
 
             @NotBlank @Size(min = 12, max = 128, message = "password must be at least 12 characters")
-            String password
+            String password,
+
+            @NotNull(message = "You must accept the Terms and Conditions to create an account.")
+            @AssertTrue(message = "You must accept the Terms and Conditions to create an account.")
+            Boolean acceptTerms
     ) {}
 
     /** Login by username OR email. */
