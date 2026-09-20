@@ -87,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
             b.editText.setText("");
         });
 
+        b.btnForensics.setOnClickListener(v -> startActivity(new Intent(this, ForensicsActivity.class)));
+
         b.btnOverview.setOnClickListener(v -> startActivity(new Intent(this, OverviewActivity.class)));
         b.btnAllHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         b.btnProtection.setOnClickListener(v -> startActivity(new Intent(this, OnboardingActivity.class)));
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        requestBatteryExemption();
 
         // Any session at all (access OR long-lived refresh token) is enough to proceed;
         // an expired access token is silently refreshed on the first API call.
@@ -121,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-
-        b.bottomNav.post(() -> b.bottomNav.setSelectedItemId(R.id.nav_home));
 
         if (store.biometricLock() && BiometricGate.available(this) && !unlocked) {
             showLock("Unlock with your fingerprint or screen lock.");
@@ -138,34 +139,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        b.bottomNav.setSelectedItemId(R.id.nav_home);
-        b.bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                b.scroll.smoothScrollTo(0, 0);
-                return true;
-            }
-            if (id == R.id.nav_analyze) {
-                startActivity(new Intent(this, AnalyzeConsoleActivity.class));
-            } else if (id == R.id.nav_queue) {
-                startActivity(new Intent(this, QueueActivity.class).putExtra("admin", isAdmin));
-            } else if (id == R.id.nav_reports) {
-                startActivity(new Intent(this, ReportsActivity.class));
-            } else if (id == R.id.nav_learn) {
-                startActivity(new Intent(this, EducationListActivity.class));
-            }
-            // keep Home as the res/selected tab; the launched screen is a push
-            b.bottomNav.post(() -> b.bottomNav.setSelectedItemId(R.id.nav_home));
-            return false;
-        });
+        b.tabShield.setOnClickListener(v -> b.scroll.smoothScrollTo(0, 0));
+        b.tabVault.setOnClickListener(v -> startActivity(new Intent(this, QueueActivity.class).putExtra("admin", isAdmin)));
+        b.btnCenterScan.setOnClickListener(v -> startActivity(new Intent(this, AnalyzeConsoleActivity.class)));
+        b.tabReports.setOnClickListener(v -> startActivity(new Intent(this, isAdmin ? ReportsActivity.class : HistoryActivity.class)));
+        b.tabAcademy.setOnClickListener(v -> startActivity(new Intent(this, EducationListActivity.class)));
     }
 
-    /** Ask the backend whether this account is an admin; hide the Reports tab otherwise. */
+    /** Ask the backend whether this account is an admin; show overview button if so. */
     private void refreshRole() {
         if (!store.hasAccount()) {           // offline / guest — no admin features
             isAdmin = false;
-            android.view.MenuItem reports = b.bottomNav.getMenu().findItem(R.id.nav_reports);
-            if (reports != null) reports.setVisible(false);
             b.btnOverview.setVisibility(View.GONE);
             return;
         }
@@ -174,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
                                              @androidx.annotation.NonNull Response<java.util.Map<String, Object>> resp) {
                 Object admin = resp.isSuccessful() && resp.body() != null ? resp.body().get("admin") : null;
                 isAdmin = Boolean.TRUE.equals(admin);
-                android.view.MenuItem reports = b.bottomNav.getMenu().findItem(R.id.nav_reports);
-                if (reports != null) reports.setVisible(isAdmin);
                 b.btnOverview.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
             }
             @Override public void onFailure(@androidx.annotation.NonNull Call<java.util.Map<String, Object>> call,
@@ -270,5 +252,19 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(@androidx.annotation.NonNull Call<List<EduAdapter.Module>> call,
                                   @androidx.annotation.NonNull Throwable t) { /* bundled copy stays */ }
         });
+    }
+
+    /** Once: ask Android not to put Secure Me to sleep, so protection keeps running in the background. */
+    private void requestBatteryExemption() {
+        try {
+            android.content.SharedPreferences sp = getSharedPreferences("shield_prefs", MODE_PRIVATE);
+            android.os.PowerManager pm = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+            if (pm == null || pm.isIgnoringBatteryOptimizations(getPackageName())) return;
+            if (sp.getBoolean("asked_battery", false)) return;
+            sp.edit().putBoolean("asked_battery", true).apply();
+            startActivity(new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    android.net.Uri.parse("package:" + getPackageName())));
+        } catch (Exception ignored) {
+        }
     }
 }

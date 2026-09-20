@@ -44,6 +44,7 @@ public class FraudAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         prefs = new ShieldPrefs(this);
         instance = this;
+        KeepAliveService.start(this);
         Log.i(TAG, "Browsing shield connected");
     }
 
