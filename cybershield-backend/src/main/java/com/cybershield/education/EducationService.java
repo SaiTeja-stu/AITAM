@@ -20,8 +20,10 @@ public class EducationService {
                          List<String> doThis, List<String> keyPoints,
                          List<String> redFlags, String category) {}
 
+    public static final List<String> LANGS = List.of("en", "te", "hi");
+
     private final ObjectMapper mapper;
-    private List<Module> modules = List.of();
+    private final java.util.Map<String, List<Module>> byLang = new java.util.HashMap<>();
 
     public EducationService(ObjectMapper mapper) {
         this.mapper = mapper;
@@ -29,19 +31,35 @@ public class EducationService {
 
     @PostConstruct
     void load() {
-        try (var in = new ClassPathResource("education/modules.json").getInputStream()) {
-            modules = List.of(mapper.readValue(in, Module[].class));
-            log.info("Loaded {} education modules", modules.size());
-        } catch (Exception e) {
-            log.warn("Could not load education modules: {}", e.toString());
+        for (String lang : LANGS) {
+            String file = "en".equals(lang) ? "education/modules.json" : "education/modules_" + lang + ".json";
+            try (var in = new ClassPathResource(file).getInputStream()) {
+                byLang.put(lang, List.of(mapper.readValue(in, Module[].class)));
+                log.info("Loaded {} education modules ({})", byLang.get(lang).size(), lang);
+            } catch (Exception e) {
+                log.warn("Could not load education modules {}: {}", file, e.toString());
+            }
         }
     }
 
+    private List<Module> forLang(String lang) {
+        List<Module> m = byLang.get(lang == null ? "en" : lang.toLowerCase());
+        return m == null || m.isEmpty() ? byLang.getOrDefault("en", List.of()) : m;
+    }
+
     public List<Module> all() {
-        return modules;
+        return forLang("en");
+    }
+
+    public List<Module> all(String lang) {
+        return forLang(lang);
     }
 
     public Module byId(String id) {
-        return modules.stream().filter(m -> m.id().equals(id)).findFirst().orElse(null);
+        return byId(id, "en");
+    }
+
+    public Module byId(String id, String lang) {
+        return forLang(lang).stream().filter(m -> m.id().equals(id)).findFirst().orElse(null);
     }
 }

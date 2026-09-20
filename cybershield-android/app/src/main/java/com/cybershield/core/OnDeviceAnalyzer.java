@@ -32,6 +32,7 @@ import com.cybershield.engine.policies.url.InsecureTransportPolicy;
 import com.cybershield.engine.policies.url.IpAddressHostPolicy;
 import com.cybershield.engine.policies.url.MlUrlScorePolicy;
 import com.cybershield.engine.policies.url.PunycodeHomographPolicy;
+import com.cybershield.engine.policies.url.PiracyGamblingPolicy;
 import com.cybershield.engine.policies.url.SuspiciousTldPolicy;
 import com.cybershield.engine.policies.url.TyposquattingPolicy;
 import com.cybershield.engine.policies.url.UrlObfuscationPolicy;
@@ -77,6 +78,7 @@ public final class OnDeviceAnalyzer {
                 new UrlShortenerPolicy(intel),
                 new UrlObfuscationPolicy(),
                 new SuspiciousTldPolicy(intel),
+                new PiracyGamblingPolicy(intel),
                 new InsecureTransportPolicy(),
                 new BlocklistUrlPolicy(intel),
                 new AllowlistUrlPolicy(intel),

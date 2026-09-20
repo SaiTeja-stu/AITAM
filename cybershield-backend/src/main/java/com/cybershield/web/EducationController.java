@@ -20,13 +20,14 @@ public class EducationController {
     }
 
     @GetMapping("/modules")
-    public List<EducationService.Module> modules() {
-        return education.all();
+    public List<EducationService.Module> modules(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "en") String lang) {
+        return education.all(lang);
     }
 
     @GetMapping("/modules/{id}")
-    public ResponseEntity<EducationService.Module> module(@PathVariable String id) {
-        EducationService.Module m = education.byId(id);
+    public ResponseEntity<EducationService.Module> module(@PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "en") String lang) {
+        EducationService.Module m = education.byId(id, lang);
         return m == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(m);
     }
 }

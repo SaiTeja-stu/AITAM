@@ -19,6 +19,9 @@ import {
   PhoneCall,
   ChevronRight,
   ShieldAlert,
+  Volume2,
+  Square,
+  Languages,
 } from 'lucide-react';
 import { api } from '../api.js';
 import { Spinner } from '../components/ui.jsx';
@@ -152,8 +155,70 @@ const SIMULATED_SCENARIOS = [
   },
 ];
 
+// ---- languages (same three as the Secure Me app) and text-to-speech ----
+const LANGS = [
+  { code: 'en', label: 'English', tts: 'en-IN' },
+  { code: 'te', label: 'తెలుగు', tts: 'te-IN' },
+  { code: 'hi', label: 'हिन्दी', tts: 'hi-IN' },
+];
+const T = {
+  listen: { en: 'Listen', te: 'వినండి', hi: 'सुनें' },
+  stop: { en: 'Stop', te: 'ఆపండి', hi: 'रोकें' },
+  doThis: { en: 'Do this', te: 'ఇలా చేయండి', hi: 'यह करें' },
+  danger: { en: 'Danger signs', te: 'ప్రమాద సంకేతాలు', hi: 'ख़तरे के संकेत' },
+  rule: { en: 'Golden rule', te: 'బంగారు నియమం', hi: 'सुनहरा नियम' },
+  language: { en: 'Language', te: 'భాష', hi: 'भाषा' },
+};
+
+function readStoredLang() {
+  try {
+    const v = localStorage.getItem('secureme.eduLang');
+    return LANGS.some((l) => l.code === v) ? v : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+/** Speaks text with the best matching browser voice; reports if none is installed for the language. */
+function speak(text, lang, onEnd, onNoVoice) {
+  if (!('speechSynthesis' in window)) {
+    onNoVoice('This browser cannot read text aloud.');
+    onEnd();
+    return;
+  }
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const tag = LANGS.find((l) => l.code === lang)?.tts || 'en-IN';
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = tag;
+  u.rate = 0.95;
+  const voices = synth.getVoices();
+  const v = voices.find((x) => x.lang === tag) || voices.find((x) => x.lang.toLowerCase().startsWith(lang));
+  if (v) u.voice = v;
+  else if (voices.length && lang !== 'en') {
+    onNoVoice(
+      'No ' + LANGS.find((l) => l.code === lang).label + ' voice is installed on this device. Add one in your system Language / Text-to-speech settings.',
+    );
+  }
+  u.onend = onEnd;
+  u.onerror = onEnd;
+  synth.speak(u);
+}
+
+function moduleText(m, lang) {
+  const steps = m.doThis || m.keyPoints || [];
+  const parts = [m.title, m.summary];
+  if (m.rule) parts.push(T.rule[lang] + ': ' + m.rule);
+  if (steps.length) parts.push(T.doThis[lang] + ': ' + steps.join('. '));
+  if (m.redFlags && m.redFlags.length) parts.push(T.danger[lang] + ': ' + m.redFlags.join('. '));
+  return parts.join('. ');
+}
+
 export default function Education() {
   const [mods, setMods] = useState(null);
+  const [lang, setLang] = useState(readStoredLang);
+  const [speakingId, setSpeakingId] = useState('');
+  const [voiceNote, setVoiceNote] = useState('');
   const [err, setErr] = useState('');
   const [activeTab, setActiveTab] = useState('library'); // 'library' | 'quiz' | 'simulator' | 'checklist'
   const [searchTerm, setSearchTerm] = useState('');
@@ -170,8 +235,35 @@ export default function Education() {
   const [activeScenarioId, setActiveScenarioId] = useState('sms-phish');
 
   useEffect(() => {
-    api.education().then(setMods).catch((e) => setErr(e.message));
-  }, []);
+    setMods(null);
+    api.education(lang).then(setMods).catch((e) => setErr(e.message));
+    try {
+      localStorage.setItem('secureme.eduLang', lang);
+    } catch {
+      /* ignore */
+    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setSpeakingId('');
+    setVoiceNote('');
+  }, [lang]);
+
+  useEffect(
+    () => () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    },
+    [],
+  );
+
+  const toggleSpeak = (m) => {
+    if (speakingId === m.id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId('');
+      return;
+    }
+    setVoiceNote('');
+    setSpeakingId(m.id);
+    speak(moduleText(m, lang), lang, () => setSpeakingId((cur) => (cur === m.id ? '' : cur)), setVoiceNote);
+  };
 
   if (err) {
     return (
@@ -324,6 +416,31 @@ export default function Education() {
       {/* TAB 1: AWARENESS LIBRARY */}
       {activeTab === 'library' && (
         <div className="space-y-6">
+          {/* Language (same three languages as the Secure Me app) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+              <Languages className="h-4 w-4 text-cyber-accent" /> {T.language[lang]}
+            </span>
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                  lang === l.code
+                    ? 'bg-cyber-accent text-slate-950 shadow-cyber-glow'
+                    : 'border border-cyber-border bg-cyber-dark/80 text-slate-300 hover:text-white'
+                }`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+          {voiceNote && (
+            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2.5 text-xs text-yellow-300">
+              {voiceNote}
+            </div>
+          )}
+
           {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Search Input */}
@@ -382,9 +499,17 @@ export default function Education() {
                       <span className="rounded-lg border border-cyber-accent/30 bg-cyber-accent/10 px-3 py-1 font-mono text-[11px] font-bold text-cyber-accent uppercase tracking-wider">
                         {m.category}
                       </span>
-                      <span className="flex items-center gap-1 font-mono text-[11px] text-slate-400">
-                        <BookOpen className="h-3.5 w-3.5 text-cyber-accent" /> #{m.id}
-                      </span>
+                      <button
+                        onClick={() => toggleSpeak(m)}
+                        className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition-all ${
+                          speakingId === m.id
+                            ? 'border-cyber-accent bg-cyber-accent text-slate-950'
+                            : 'border-cyber-accent/40 text-cyber-accent hover:bg-cyber-accent/10'
+                        }`}
+                      >
+                        {speakingId === m.id ? <Square className="h-3 w-3" /> : <Volume2 className="h-3.5 w-3.5" />}
+                        {speakingId === m.id ? T.stop[lang] : T.listen[lang]}
+                      </button>
                     </div>
 
                     <div>
@@ -392,16 +517,21 @@ export default function Education() {
                         {m.title}
                       </h3>
                       <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">{m.summary}</p>
+                      {m.rule && (
+                        <p className="mt-3 rounded-lg border border-cyber-accent/30 bg-cyber-accent/10 px-3 py-2 text-xs font-semibold text-cyber-accent">
+                          {T.rule[lang]}: {m.rule}
+                        </p>
+                      )}
                     </div>
 
                     {/* Key Defense Points */}
-                    {m.keyPoints && m.keyPoints.length > 0 && (
+                    {(m.doThis || m.keyPoints || []).length > 0 && (
                       <div className="rounded-xl border border-cyber-border/60 bg-cyber-dark/70 p-4 space-y-2.5">
                         <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                          <ShieldCheck className="h-4 w-4" /> Defense Best Practices
+                          <ShieldCheck className="h-4 w-4" /> {T.doThis[lang]}
                         </div>
                         <ul className="space-y-2 text-xs text-slate-300">
-                          {m.keyPoints.map((k, i) => (
+                          {(m.doThis || m.keyPoints).map((k, i) => (
                             <li key={i} className="flex items-start gap-2.5">
                               <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
                               <span className="leading-snug">{k}</span>
@@ -415,7 +545,7 @@ export default function Education() {
                     {m.redFlags && m.redFlags.length > 0 && (
                       <div className="rounded-xl border border-red-500/25 bg-red-500/5 p-4 space-y-2.5">
                         <div className="flex items-center gap-2 text-xs font-bold text-red-400">
-                          <AlertOctagon className="h-4 w-4" /> Threat Red Flags
+                          <AlertOctagon className="h-4 w-4" /> {T.danger[lang]}
                         </div>
                         <ul className="space-y-2 text-xs text-slate-300">
                           {m.redFlags.map((k, i) => (
@@ -430,7 +560,7 @@ export default function Education() {
                   </div>
 
                   <div className="pt-2 border-t border-cyber-border/40 flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-mono text-[11px]">Sync ID: {m.id}</span>
+                    <span className="font-mono text-[11px]">#{m.id}</span>
                     <button
                       onClick={() => {
                         setActiveTab('quiz');

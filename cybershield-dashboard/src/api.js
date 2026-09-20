@@ -53,5 +53,5 @@ export const api = {
   rejectReport: (id) => request('POST', `/api/v1/admin/reports/${id}/reject`),
   users: () => request('GET', '/api/v1/admin/users'),
   storage: () => request('GET', '/api/v1/admin/storage'),
-  education: () => request('GET', '/api/v1/education/modules'),
+  education: (lang = 'en') => request('GET', `/api/v1/education/modules?lang=${encodeURIComponent(lang)}`),
 };
