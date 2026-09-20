@@ -38,7 +38,7 @@ async function request(method, path, body) {
 export const api = {
   login: (login, password) => request('POST', '/auth/login', { login, password }),
   register: (email, username, displayName, password) =>
-    request('POST', '/auth/register', { email, username, displayName, password }),
+    request('POST', '/auth/register', { email, username, displayName, password, acceptTerms: true }),
   verifyEmail: (email, code) => request('POST', '/auth/verify-email', { email, code }),
   forgotPassword: (email) => request('POST', '/auth/forgot-password', { email }),
   resetPassword: (email, code, newPassword) =>
@@ -51,5 +51,7 @@ export const api = {
   reports: (status) => request('GET', `/api/v1/admin/reports${status ? `?status=${status}` : ''}`),
   confirmReport: (id) => request('POST', `/api/v1/admin/reports/${id}/confirm`),
   rejectReport: (id) => request('POST', `/api/v1/admin/reports/${id}/reject`),
+  users: () => request('GET', '/api/v1/admin/users'),
+  storage: () => request('GET', '/api/v1/admin/storage'),
   education: () => request('GET', '/api/v1/education/modules'),
 };

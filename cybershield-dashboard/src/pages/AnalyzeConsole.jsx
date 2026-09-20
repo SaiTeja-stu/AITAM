@@ -178,7 +178,7 @@ export default function AnalyzeConsole() {
                   <div className="absolute bottom-3 right-3 h-6 w-6 border-r-2 border-b-2 border-cyber-accent rounded-br-md animate-corner-glow" />
 
                   {/* Animated Sweeping Laser Line */}
-                  <div className="absolute inset-x-4 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#38bdf8] animate-scan-laser pointer-events-none" />
+                  <div className="absolute inset-x-4 h-1 bg-gradient-to-r from-transparent via-[#63e31a] to-transparent shadow-[0_0_8px_#63e31a] animate-scan-laser pointer-events-none" />
 
                   {/* Center Crosshair Target Overlay */}
                   <div className="absolute h-10 w-10 rounded-full border border-cyan-400/40 pointer-events-none flex items-center justify-center">
@@ -220,8 +220,8 @@ export default function AnalyzeConsole() {
               onClick={run}
               disabled={busy || !content.trim()}
               size="lg"
-              lineColor="#38bdf8"
-              baseColor="#0369a1"
+              lineColor="#63e31a"
+              baseColor="#1c5a12"
               radius={14}
               className="w-full font-bold shadow-cyber-glow"
             >

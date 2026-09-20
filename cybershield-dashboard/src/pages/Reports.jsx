@@ -53,8 +53,8 @@ export default function Reports() {
         <SpecularButton
           onClick={load}
           size="sm"
-          lineColor="#38bdf8"
-          baseColor="#1e293b"
+          lineColor="#63e31a"
+          baseColor="#0d2314"
           radius={12}
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh Reports
@@ -167,8 +167,8 @@ export default function Reports() {
                     onClick={() => act(r.id, 'reject')}
                     disabled={busyId === r.id}
                     size="sm"
-                    lineColor="#94a3b8"
-                    baseColor="#1e293b"
+                    lineColor="#82988a"
+                    baseColor="#0d2314"
                     radius={12}
                   >
                     {busyId === r.id ? <Spinner className="h-3.5 w-3.5" /> : <XCircle className="h-4 w-4 text-slate-400" />}

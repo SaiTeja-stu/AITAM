@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  ListFilter,
-  SearchCode,
-  ShieldAlert,
-  GraduationCap,
-  LogOut,
-  Shield,
-  Activity,
-  Clock,
-  Radio,
-} from 'lucide-react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { useAuth } from './auth.jsx';
 import Login from './pages/Login.jsx';
 import Reset from './pages/Reset.jsx';
@@ -20,101 +9,53 @@ import Queue from './pages/Queue.jsx';
 import AnalyzeConsole from './pages/AnalyzeConsole.jsx';
 import Reports from './pages/Reports.jsx';
 import Education from './pages/Education.jsx';
-import PillNav from './components/PillNav.jsx';
-import SpecularButton from './components/SpecularButton.jsx';
-import Galaxy from './components/Galaxy.jsx';
+import Users from './pages/Users.jsx';
+import Aurora from './components/Aurora.jsx';
+import DockNav from './components/DockNav.jsx';
+import Footer from './components/Footer.jsx';
 import logoImg from './assets/logo.jpg';
-
-const NAV = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/queue', label: 'Priority Queue', icon: ListFilter },
-  { to: '/analyze', label: 'Analyze Console', icon: SearchCode },
-  { to: '/reports', label: 'Threat Reports', icon: ShieldAlert },
-  { to: '/education', label: 'Education', icon: GraduationCap },
-];
-
-const PILL_NAV_ITEMS = [
-  { label: 'Overview', href: '/' },
-  { label: 'Priority Queue', href: '/queue' },
-  { label: 'Analyze Console', href: '/analyze' },
-  { label: 'Threat Reports', href: '/reports' },
-  { label: 'Education', href: '/education' },
-];
 
 function Shell({ children }) {
   const { logout } = useAuth();
   const location = useLocation();
-  const [time, setTime] = useState(new Date().toUTCString());
+  const [time, setTime] = useState(new Date().toUTCString().slice(17, 25) + ' UTC');
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date().toUTCString().slice(17, 25) + ' UTC'), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [location.pathname]);
+
   return (
-    <div className="relative isolate flex min-h-screen flex-col bg-cyber-dark text-slate-100 bg-grid-pattern overflow-x-hidden">
-      {/* Animated WebGL Galaxy Background Layer */}
-      <Galaxy 
-        mouseRepulsion={false}
-        mouseInteraction={false}
-        density={1.8}
-        glowIntensity={0.2}
-        saturation={0}
-        hueShift={50}
-        twinkleIntensity={0.2}
-        rotationSpeed={0}
-        repulsionStrength={2}
-        autoCenterRepulsion={0}
-        starSpeed={0.1}
-        speed={1}
-      />
+    <div className="relative isolate flex min-h-screen flex-col overflow-x-hidden bg-cyber-dark text-slate-100">
+      <Aurora />
 
-      {/* Top Operations Header Bar with Centered PillNav */}
-      <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-cyber-border/80 bg-cyber-dark/60 px-6 md:px-10 backdrop-blur-xl shadow-2xl">
-        {/* Brand Header (Left) */}
-        <div className="flex items-center gap-3 min-w-[220px]">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyber-accent to-cyber-indigo p-0.5 shadow-cyber-glow overflow-hidden">
-            <img src={logoImg} alt="Cyber Shield" className="h-full w-full object-cover rounded-[10px]" />
-          </div>
-          <div>
-            <span className="font-bold tracking-wider text-white text-base">CYBER SHIELD</span>
-          </div>
+      {/* Top bar: brand on the left, sign-out pill with the green dot on the right */}
+      <header className="relative z-30 flex h-20 items-center justify-between px-6 md:px-10">
+        <div className="flex items-center gap-3">
+          <img src={logoImg} alt="Cyber Shield" className="h-8 w-8 rounded-lg object-cover ring-1 ring-cyber-accent/30" />
+          <span className="text-sm font-medium tracking-[0.18em] text-white">
+            CYBER<span className="text-cyber-accent">SHIELD</span>
+          </span>
         </div>
-
-        {/* Centered PillNav (Center) */}
-        <div className="flex flex-1 justify-center px-4">
-          <PillNav
-            items={PILL_NAV_ITEMS}
-            activeHref={location.pathname}
-            baseColor="#0b0f19"
-            pillColor="#131b2e"
-            hoveredPillTextColor="#38bdf8"
-            pillTextColor="#94a3b8"
-          />
-        </div>
-
-        {/* System Status & Sign Out (Right) */}
-        <div className="flex items-center justify-end gap-4 min-w-[220px]">
-          <div className="hidden sm:flex items-center gap-2 rounded-lg border border-cyber-border bg-cyber-panel/60 px-3 py-1.5 text-xs font-mono text-slate-400">
-            <Clock className="h-3.5 w-3.5 text-cyber-accent" />
-            <span>{time}</span>
-          </div>
-          <SpecularButton
-            onClick={logout}
-            size="sm"
-            lineColor="#f87171"
-            baseColor="#7f1d1d"
-            radius={12}
-            className="border border-cyber-border"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Sign Out</span>
-          </SpecularButton>
+        <div className="flex items-center gap-4">
+          <span className="hidden font-mono text-[11px] tracking-wider text-slate-500 sm:inline">{time}</span>
+          <button type="button" onClick={logout} className="pill-ghost">
+            Sign out
+            <span className="dot">
+              <LogOut className="h-3.5 w-3.5" />
+            </span>
+          </button>
         </div>
       </header>
 
-      {/* Main Content Area - Full Width */}
-      <main className="relative z-10 flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
+      <main className="relative z-10 mx-auto w-full max-w-7xl flex-1 px-6 pt-2 md:px-8">{children}</main>
+
+      <Footer />
+      <DockNav />
     </div>
   );
 }
@@ -134,6 +75,7 @@ export default function App() {
         <Route path="/analyze" element={<AnalyzeConsole />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/education" element={<Education />} />
+        <Route path="/users" element={<Users />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>

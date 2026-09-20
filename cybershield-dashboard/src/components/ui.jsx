@@ -5,37 +5,37 @@ export const LEVEL_META = {
     label: 'Malicious',
     priority: 'P1',
     icon: ShieldAlert,
-    badgeCls: 'bg-red-500/10 text-red-400 border-red-500/30 shadow-rose-glow',
-    dotCls: 'bg-red-500',
-    barCls: 'bg-red-500',
-    color: '#f43f5e',
+    badgeCls: 'bg-cyber-rose/10 text-cyber-rose border-cyber-rose/30 shadow-rose-glow',
+    dotCls: 'bg-cyber-rose',
+    barCls: 'bg-cyber-rose',
+    color: '#ff5c66',
   },
   HIGH_RISK: {
     label: 'High Risk',
     priority: 'P2',
     icon: AlertTriangle,
-    badgeCls: 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-amber-glow',
-    dotCls: 'bg-orange-500',
-    barCls: 'bg-orange-500',
-    color: '#f97316',
+    badgeCls: 'bg-cyber-amber/10 text-cyber-amber border-cyber-amber/30 shadow-amber-glow',
+    dotCls: 'bg-cyber-amber',
+    barCls: 'bg-cyber-amber',
+    color: '#ff9f43',
   },
   SUSPICIOUS: {
     label: 'Suspicious',
     priority: 'P3',
     icon: HelpCircle,
-    badgeCls: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-    dotCls: 'bg-yellow-400',
-    barCls: 'bg-yellow-500',
-    color: '#eab308',
+    badgeCls: 'bg-cyber-yellow/10 text-cyber-yellow border-cyber-yellow/30',
+    dotCls: 'bg-cyber-yellow',
+    barCls: 'bg-cyber-yellow',
+    color: '#f5d547',
   },
   SAFE: {
     label: 'Clean / Safe',
     priority: 'P4',
     icon: ShieldCheck,
-    badgeCls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-emerald-glow',
-    dotCls: 'bg-emerald-500',
-    barCls: 'bg-emerald-500',
-    color: '#10b981',
+    badgeCls: 'bg-cyber-emerald/10 text-cyber-emerald border-cyber-emerald/30 shadow-emerald-glow',
+    dotCls: 'bg-cyber-emerald',
+    barCls: 'bg-cyber-emerald',
+    color: '#63e31a',
   },
 };
 
@@ -53,7 +53,7 @@ export function RiskBadge({ level, showPriority = true }) {
 }
 
 export function ScoreRing({ score, size = 'md' }) {
-  const color = score >= 75 ? '#f43f5e' : score >= 50 ? '#f97316' : score >= 25 ? '#eab308' : '#10b981';
+  const color = score >= 75 ? '#ff5c66' : score >= 50 ? '#ff9f43' : score >= 25 ? '#f5d547' : '#63e31a';
   const dim = size === 'lg' ? 'h-20 w-20' : size === 'sm' ? 'h-10 w-10' : 'h-16 w-16';
   const strokeWidth = size === 'lg' ? 3.5 : 3;
   const textCls = size === 'lg' ? 'text-xl' : size === 'sm' ? 'text-xs' : 'text-base';
@@ -61,7 +61,7 @@ export function ScoreRing({ score, size = 'md' }) {
   return (
     <div className={`relative ${dim} shrink-0 flex items-center justify-center`}>
       <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90 transform filter drop-shadow">
-        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#1e2638" strokeWidth={strokeWidth} />
+        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#12281a" strokeWidth={strokeWidth} />
         <circle
           cx="18"
           cy="18"

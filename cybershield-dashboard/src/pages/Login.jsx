@@ -4,6 +4,7 @@ import { useAuth } from '../auth.jsx';
 import { api } from '../api.js';
 import { Spinner } from '../components/ui.jsx';
 import SpecularButton from '../components/SpecularButton.jsx';
+import Aurora from '../components/Aurora.jsx';
 import logoImg from '../assets/logo.jpg';
 
 export default function Login() {
@@ -32,22 +33,28 @@ export default function Login() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-cyber-dark px-4 bg-grid-pattern">
-      {/* Background ambient glow */}
-      <div className="absolute h-96 w-96 rounded-full bg-cyber-accent/10 blur-3xl pointer-events-none" />
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-cyber-dark px-4">
+      <Aurora />
 
       <form
         onSubmit={submit}
-        className="glass-card relative z-10 w-full max-w-md rounded-3xl p-8 border border-cyber-border/80 shadow-2xl space-y-6"
+        className="glass-card relative z-10 w-full max-w-md space-y-6 rounded-3xl p-8 hover:translate-y-0"
       >
         {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyber-accent to-cyber-indigo p-0.5 shadow-cyber-glow overflow-hidden">
-            <img src={logoImg} alt="Cyber Shield Admin" className="h-full w-full object-cover rounded-[14px]" />
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <img src={logoImg} alt="Cyber Shield" className="h-9 w-9 rounded-lg object-cover ring-1 ring-cyber-accent/30" />
+            <span className="text-sm font-medium tracking-[0.18em] text-white">
+              CYBER<span className="text-cyber-accent">SHIELD</span>
+            </span>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">CYBER SHIELD SOC</h1>
-            <p className="text-xs text-slate-400">Threat Intelligence & Operations Terminal</p>
+            <div className="label-mono mb-3">[ Operations terminal ]</div>
+            <h1 className="display text-[2.6rem]">
+              {forgot ? 'Reset' : 'Sign in'}
+              <br />
+              <span className="dim">{forgot ? 'your password' : 'to the console'}</span>
+            </h1>
           </div>
         </div>
 
@@ -108,9 +115,9 @@ export default function Login() {
           type="submit"
           disabled={busy}
           size="lg"
-          lineColor="#38bdf8"
-          baseColor="#0369a1"
-          textColor="#0284c7"
+          lineColor="#63e31a"
+          baseColor="#1c5a12"
+          textColor="#9df05a"
           radius={14}
           className="w-full font-bold shadow-cyber-glow"
         >
@@ -130,7 +137,7 @@ export default function Login() {
         </button>
 
         <div className="border-t border-cyber-border/60 pt-4 text-center text-[11px] text-slate-500">
-          Cyber Shield Protection Platform · Port 8899 Security Gate
+          Cyber Shield · part of the Secure Me protection platform
         </div>
       </form>
     </div>

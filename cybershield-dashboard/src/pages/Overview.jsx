@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ShieldAlert, Activity, FileText, AlertOctagon, TrendingUp, Layers } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ShieldAlert, Activity, FileText, AlertOctagon, TrendingUp, Layers, ArrowUpRight } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { api } from '../api.js';
-import { Card, StatWidget, BarList, Spinner, LEVEL_META } from '../components/ui.jsx';
+import { Card, StatWidget, BarList, Spinner } from '../components/ui.jsx';
+import ParticleOrb from '../components/ParticleOrb.jsx';
 
-const PIE_COLORS = ['#38bdf8', '#818cf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa'];
+const PIE_COLORS = ['#63e31a', '#2fbf71', '#a3e635', '#ff5c66', '#ff9f43', '#5f7566'];
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -22,6 +24,41 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
+function Hero() {
+  return (
+    <section className="relative mb-14 flex min-h-[560px] items-center md:min-h-[620px]">
+      <ParticleOrb className="absolute inset-0 h-full w-full" />
+      <div className="relative z-10 grid w-full items-center gap-10 md:grid-cols-[1.3fr_minmax(160px,280px)_1fr]">
+        <div>
+          <div className="label-mono mb-6">[ Threat overview ]</div>
+          <h1 className="display text-[clamp(2.2rem,4.3vw,4rem)]">
+            Stopping scams
+            <br />
+            before they land
+          </h1>
+          <Link to="/analyze" className="pill-cta mt-9">
+            Analyze now
+            <span className="dot">
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
+          </Link>
+        </div>
+        <div className="hidden md:block" />
+        <div className="md:pl-6">
+          <h1 className="display text-[clamp(2.2rem,4.3vw,4rem)] md:text-right">
+            in real
+            <br />
+            time.
+          </h1>
+          <p className="mt-6 max-w-[250px] text-xs leading-relaxed text-slate-400 md:ml-auto md:text-right">
+            Live scans, community reports and threat trends from every Secure Me app, browser extension and console.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Overview() {
   const [stats, setStats] = useState(null);
   const [trends, setTrends] = useState(null);
@@ -38,6 +75,8 @@ export default function Overview() {
 
   if (err) {
     return (
+      <>
+      <Hero />
       <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-400 flex items-center gap-3">
         <AlertOctagon className="h-6 w-6 shrink-0" />
         <div>
@@ -45,17 +84,21 @@ export default function Overview() {
           <p className="text-sm">{err}</p>
         </div>
       </div>
+      </>
     );
   }
 
   if (!stats || !trends) {
     return (
+      <>
+      <Hero />
       <div className="flex h-64 flex-col items-center justify-center gap-3 text-slate-400">
         <Spinner className="h-8 w-8" />
         <span className="font-mono text-xs uppercase tracking-widest text-slate-500">
           Gathering Threat Intelligence…
         </span>
       </div>
+      </>
     );
   }
 
@@ -65,10 +108,10 @@ export default function Overview() {
 
   // Pie chart formatted data
   const riskPieData = [
-    { name: 'Malicious', value: lvl.MALICIOUS || 0, fill: '#f43f5e' },
-    { name: 'High Risk', value: lvl.HIGH_RISK || 0, fill: '#f97316' },
-    { name: 'Suspicious', value: lvl.SUSPICIOUS || 0, fill: '#eab308' },
-    { name: 'Clean / Safe', value: lvl.SAFE || 0, fill: '#10b981' },
+    { name: 'Malicious', value: lvl.MALICIOUS || 0, fill: '#ff5c66' },
+    { name: 'High Risk', value: lvl.HIGH_RISK || 0, fill: '#ff9f43' },
+    { name: 'Suspicious', value: lvl.SUSPICIOUS || 0, fill: '#f5d547' },
+    { name: 'Clean / Safe', value: lvl.SAFE || 0, fill: '#63e31a' },
   ].filter(d => d.value > 0);
 
   const typePieData = perType.map((item, idx) => ({
@@ -78,19 +121,18 @@ export default function Overview() {
   }));
 
   return (
-    <div className="space-y-8">
-      {/* Top Welcome & Quick Header */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Security Command Overview</h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Real-time threat metrics, cold archive signals, and community report activity.
-          </p>
-        </div>
+    <div className="space-y-10">
+      <Hero />
+
+      <div>
+        <div className="label-mono mb-3">[ 01 ] Live metrics</div>
+        <h2 className="display text-[clamp(1.8rem,3.4vw,2.8rem)]">
+          What is happening <span className="dim">right now</span>
+        </h2>
       </div>
 
       {/* Hero Stat Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="tile-cycle grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatWidget
           label="Total Scans Processed"
           value={stats.totalScans}

@@ -1,0 +1,13 @@
+*
+!cybershield-backend/
+!cybershield-dashboard/
+**/node_modules
+**/dist
+**/build
+**/.gradle
+**/bin
+cybershield-backend/data
+cybershield-backend/ml
+cybershield-backend/gradle.properties
+**/*.log
+**/*.db
