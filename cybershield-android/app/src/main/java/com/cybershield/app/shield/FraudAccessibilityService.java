@@ -54,47 +54,27 @@ public class FraudAccessibilityService extends AccessibilityService {
     }
 
     /**
-     * "Go back - stay safe": press BACK, and if the browser is still showing the risky host a moment
-     * later (a fresh tab, or a redirect chain) send the user Home instead.
+     * Leaves the risky website but stays in the same browser: opens a safe page in that browser, which
+     * replaces the risky page on screen instantly. No Back press (that would exit the browser when the
+     * page has no history) and no waiting.
      */
-    public static void goToSafety(String host) {
+    public static void leaveSite(String browserPkg) {
         final FraudAccessibilityService svc = instance;
         if (svc == null) return;
-        // wait for our overlay to go away so we look at the real foreground app
-        svc.ui.postDelayed(() -> {
-            String cur = svc.foregroundBrowserHost();
-            if (cur == NOT_BROWSER) return;                 // already left the browser (e.g. the shield pressed Back)
-            if (cur != null && host != null && !cur.equals(host)) return;   // already on a different site
-            svc.performGlobalAction(GLOBAL_ACTION_BACK);
-            svc.ui.postDelayed(() -> {
-                String again = svc.foregroundBrowserHost();
-                if (again != NOT_BROWSER && (again == null || again.equals(host))) {
-                    svc.performGlobalAction(GLOBAL_ACTION_HOME);   // no page to go back to: leave the browser
-                }
-            }, 700);
-        }, 350);
-    }
-
-    private static final String NOT_BROWSER = new String("not-a-browser");
-
-    /** Host shown in the foreground browser, null if a browser is up but the URL is unreadable, NOT_BROWSER otherwise. */
-    private String foregroundBrowserHost() {
-        try {
-            AccessibilityNodeInfo root = getRootInActiveWindow();
-            if (root == null) return NOT_BROWSER;
-            CharSequence pk = root.getPackageName();
-            String pkg = pk == null ? "" : pk.toString();
-            if (!BrowserUrlReader.isBrowser(pkg)) {
-                root.recycle();
-                return NOT_BROWSER;
+        svc.ui.post(() -> {
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(SAFE_PAGE))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (browserPkg != null && !browserPkg.isEmpty()) i.setPackage(browserPkg);
+                svc.startActivity(i);
+            } catch (Throwable t) {
+                Log.w(TAG, "could not open the safe page, falling back to Back", t);
+                svc.performGlobalAction(GLOBAL_ACTION_BACK);
             }
-            String u = BrowserUrlReader.read(root, pkg);
-            root.recycle();
-            return u == null ? null : hostOf(u);
-        } catch (Throwable t) {
-            return NOT_BROWSER;
-        }
+        });
     }
+
+    private static final String SAFE_PAGE = "https://www.google.com/";
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -175,7 +155,7 @@ public class FraudAccessibilityService extends AccessibilityService {
                 boolean unverified = !v.trusted && !malicious && !high && !suspicious;
 
                 if (malicious || high || (strict && (suspicious || unverified))) {
-                    showBrowserOverlay(v, fHost, malicious || (strict && high), unverified, impersonated);
+                    showBrowserOverlay(pkg, v, fHost, malicious || (strict && high), unverified, impersonated);
                     prefs.markAction();
                 }
             } catch (Throwable ignored) {
@@ -184,7 +164,7 @@ public class FraudAccessibilityService extends AccessibilityService {
         });
     }
 
-    private void showBrowserOverlay(AnalyzeResponse v, String host, boolean hard, boolean unverified,
+    private void showBrowserOverlay(String pkg, AnalyzeResponse v, String host, boolean hard, boolean unverified,
                                     String impersonatedBrand) {
         StringBuilder body = new StringBuilder();
         body.append(host).append("\n\n");
@@ -219,10 +199,11 @@ public class FraudAccessibilityService extends AccessibilityService {
         i.putExtra(OverlayService.EX_SCORE, v.riskScore);
         i.putExtra(OverlayService.EX_HARD, hard && !prefs.warnOnly());
         i.putExtra(OverlayService.EX_HOST, host);
+        i.putExtra(OverlayService.EX_PKG, pkg);
         startForegroundService(i);
 
         if (hard && !prefs.warnOnly()) {
-            performGlobalAction(GLOBAL_ACTION_BACK);
+            leaveSite(pkg);   // hard block: replace the page right away, the warning covers the switch
         }
     }
 

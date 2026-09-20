@@ -33,6 +33,7 @@ public class OverlayService extends Service {
     public static final String EX_SCORE = "score";
     public static final String EX_HARD = "hard";
     public static final String EX_HOST = "host";
+    public static final String EX_PKG = "pkg";
 
     private WindowManager wm;
     private View overlay;
@@ -51,11 +52,12 @@ public class OverlayService extends Service {
                 intent.getStringExtra(EX_BODY),
                 intent.getIntExtra(EX_SCORE, 0),
                 intent.getBooleanExtra(EX_HARD, false),
-                intent.getStringExtra(EX_HOST));
+                intent.getStringExtra(EX_HOST),
+                intent.getStringExtra(EX_PKG));
         return START_NOT_STICKY;
     }
 
-    private void show(String title, String body, int score, boolean hard, String host) {
+    private void show(String title, String body, int score, boolean hard, String host, String pkg) {
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         overlay = LayoutInflater.from(this).inflate(R.layout.overlay_warning, null);
 
@@ -70,8 +72,8 @@ public class OverlayService extends Service {
         dismiss.setOnClickListener(v -> {
             removeOverlay();
             stopSelf();
-            // actually leave the risky page (back, then home if the browser is still on it)
-            FraudAccessibilityService.goToSafety(host);
+            // hard block already replaced the page when the warning appeared; a soft warning does it now
+            if (!hard) FraudAccessibilityService.leaveSite(pkg);
         });
 
         if (hard) {
