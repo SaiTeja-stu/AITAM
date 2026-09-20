@@ -75,4 +75,42 @@ public class ShieldPrefs {
     public void markAction() {
         p.edit().putLong("last_action_at", System.currentTimeMillis()).apply();
     }
+
+    /** Enable TRAI DLT header & category verification for incoming SMS. */
+    public boolean dltProtectionEnabled() {
+        return p.getBoolean("dlt_protection_enabled", true);
+    }
+
+    public void setDltProtectionEnabled(boolean v) {
+        p.edit().putBoolean("dlt_protection_enabled", v).apply();
+    }
+
+    /** Silence alerts for genuine bank/institutional SMS from verified DLT senders to prevent false alarms. */
+    public boolean suppressLegitBankAlerts() {
+        return p.getBoolean("suppress_legit_bank_alerts", true);
+    }
+
+    public void setSuppressLegitBankAlerts(boolean v) {
+        p.edit().putBoolean("suppress_legit_bank_alerts", v).apply();
+    }
+
+    /** Alert on commercial/promotional SMS (-P suffix). Default off to avoid notification spam. */
+    public boolean notifyOnPromo() {
+        return p.getBoolean("notify_on_promo", false);
+    }
+
+    public void setNotifyOnPromo(boolean v) {
+        p.edit().putBoolean("notify_on_promo", v).apply();
+    }
+
+    /** After a fingerprint-confirmed "continue anyway", stop warning about that site for a while. */
+    public void allowHost(String host, long millis) {
+        if (host == null || host.isEmpty()) return;
+        p.edit().putLong("allow:" + host.toLowerCase(), System.currentTimeMillis() + millis).apply();
+    }
+
+    public boolean isHostAllowed(String host) {
+        if (host == null || host.isEmpty()) return false;
+        return p.getLong("allow:" + host.toLowerCase(), 0L) > System.currentTimeMillis();
+    }
 }

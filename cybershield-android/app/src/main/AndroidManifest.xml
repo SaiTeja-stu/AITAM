@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
@@ -43,7 +45,10 @@
             android:name=".ui.MainActivity"
             android:exported="false" />
 
-        <activity android:name=".ui.AuthActivity" android:exported="true">
+        <activity
+            android:name=".ui.AuthActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SecureMe.Auth">
             <!-- Password-reset deep link from the email: cybershield://reset?email=..&code=.. -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW" />
@@ -63,10 +68,14 @@
         <activity android:name=".ui.ReportsActivity" android:exported="false" />
         <activity android:name=".ui.EducationListActivity" android:exported="false" />
         <activity android:name=".ui.OverviewActivity" android:exported="false" />
+        <activity android:name=".ui.ForensicsActivity" android:exported="false" />
         <activity
             android:name=".ui.ProceedGateActivity"
             android:exported="false"
             android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:noHistory="true"
+            android:launchMode="singleInstance"
             android:theme="@style/Theme.CyberShield.Transparent" />
 
         <!-- Receives text shared from ANY app (WhatsApp, SMS, browsers, social) -->

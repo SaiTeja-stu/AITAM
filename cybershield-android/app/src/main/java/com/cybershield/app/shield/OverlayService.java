@@ -32,6 +32,7 @@ public class OverlayService extends Service {
     public static final String EX_BODY = "body";
     public static final String EX_SCORE = "score";
     public static final String EX_HARD = "hard";
+    public static final String EX_HOST = "host";
 
     private WindowManager wm;
     private View overlay;
@@ -49,11 +50,12 @@ public class OverlayService extends Service {
                 intent.getStringExtra(EX_TITLE),
                 intent.getStringExtra(EX_BODY),
                 intent.getIntExtra(EX_SCORE, 0),
-                intent.getBooleanExtra(EX_HARD, false));
+                intent.getBooleanExtra(EX_HARD, false),
+                intent.getStringExtra(EX_HOST));
         return START_NOT_STICKY;
     }
 
-    private void show(String title, String body, int score, boolean hard) {
+    private void show(String title, String body, int score, boolean hard, String host) {
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         overlay = LayoutInflater.from(this).inflate(R.layout.overlay_warning, null);
 
@@ -65,7 +67,12 @@ public class OverlayService extends Service {
 
         Button dismiss = overlay.findViewById(R.id.ovDismiss);
         Button proceed = overlay.findViewById(R.id.ovProceed);
-        dismiss.setOnClickListener(v -> { removeOverlay(); stopSelf(); });
+        dismiss.setOnClickListener(v -> {
+            removeOverlay();
+            stopSelf();
+            // actually leave the risky page (back, then home if the browser is still on it)
+            FraudAccessibilityService.goToSafety(host);
+        });
 
         if (hard) {
             proceed.setVisibility(View.GONE);
@@ -74,7 +81,8 @@ public class OverlayService extends Service {
                 proceed.setEnabled(false);
                 // require the user to confirm with fingerprint / face / PIN
                 Intent gate = new Intent(this, com.cybershield.app.ui.ProceedGateActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        .putExtra(EX_HOST, host)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(gate);
             });
         }

@@ -29,6 +29,10 @@ public class FraudAccessibilityService extends AccessibilityService {
 
     private static final String TAG = "FraudShield";
 
+    /** The connected service instance, so the warning overlay can ask it to leave a page. */
+    private static volatile FraudAccessibilityService instance;
+    private final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
+
     private ShieldPrefs prefs;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
 
@@ -39,7 +43,57 @@ public class FraudAccessibilityService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         prefs = new ShieldPrefs(this);
+        instance = this;
         Log.i(TAG, "Browsing shield connected");
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        instance = null;
+        return super.onUnbind(intent);
+    }
+
+    /**
+     * "Go back - stay safe": press BACK, and if the browser is still showing the risky host a moment
+     * later (a fresh tab, or a redirect chain) send the user Home instead.
+     */
+    public static void goToSafety(String host) {
+        final FraudAccessibilityService svc = instance;
+        if (svc == null) return;
+        // wait for our overlay to go away so we look at the real foreground app
+        svc.ui.postDelayed(() -> {
+            String cur = svc.foregroundBrowserHost();
+            if (cur == NOT_BROWSER) return;                 // already left the browser (e.g. the shield pressed Back)
+            if (cur != null && host != null && !cur.equals(host)) return;   // already on a different site
+            svc.performGlobalAction(GLOBAL_ACTION_BACK);
+            svc.ui.postDelayed(() -> {
+                String again = svc.foregroundBrowserHost();
+                if (again != NOT_BROWSER && (again == null || again.equals(host))) {
+                    svc.performGlobalAction(GLOBAL_ACTION_HOME);   // no page to go back to: leave the browser
+                }
+            }, 700);
+        }, 350);
+    }
+
+    private static final String NOT_BROWSER = new String("not-a-browser");
+
+    /** Host shown in the foreground browser, null if a browser is up but the URL is unreadable, NOT_BROWSER otherwise. */
+    private String foregroundBrowserHost() {
+        try {
+            AccessibilityNodeInfo root = getRootInActiveWindow();
+            if (root == null) return NOT_BROWSER;
+            CharSequence pk = root.getPackageName();
+            String pkg = pk == null ? "" : pk.toString();
+            if (!BrowserUrlReader.isBrowser(pkg)) {
+                root.recycle();
+                return NOT_BROWSER;
+            }
+            String u = BrowserUrlReader.read(root, pkg);
+            root.recycle();
+            return u == null ? null : hostOf(u);
+        } catch (Throwable t) {
+            return NOT_BROWSER;
+        }
     }
 
     @Override
@@ -61,8 +115,19 @@ public class FraudAccessibilityService extends AccessibilityService {
 
     // ---- browser address-bar watching ----------------------------------
 
+    private String pendingPkg;
+    private final Runnable recheck = () -> {
+        if (pendingPkg != null) handleBrowser(pendingPkg);
+    };
+
     private void handleBrowser(String pkg) {
-        if (SystemClock.elapsedRealtime() - lastUrlAt < 700) return;
+        if (SystemClock.elapsedRealtime() - lastUrlAt < 700) {
+            // Don't drop the newest event: look again shortly, so the final URL of a page load is never missed.
+            pendingPkg = pkg;
+            ui.removeCallbacks(recheck);
+            ui.postDelayed(recheck, 800);
+            return;
+        }
 
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) return;
@@ -84,6 +149,8 @@ public class FraudAccessibilityService extends AccessibilityService {
                 && SystemClock.elapsedRealtime() - lastUrlAt < 15000) return;
         lastUrlChecked = sig;
         lastUrlAt = SystemClock.elapsedRealtime();
+
+        if (prefs.isHostAllowed(host)) return;   // user confirmed this site with fingerprint / PIN
 
         final String target = url;
         final String fHost = host;
@@ -151,6 +218,7 @@ public class FraudAccessibilityService extends AccessibilityService {
         i.putExtra(OverlayService.EX_BODY, body.toString());
         i.putExtra(OverlayService.EX_SCORE, v.riskScore);
         i.putExtra(OverlayService.EX_HARD, hard && !prefs.warnOnly());
+        i.putExtra(OverlayService.EX_HOST, host);
         startForegroundService(i);
 
         if (hard && !prefs.warnOnly()) {
