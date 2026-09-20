@@ -34,6 +34,7 @@ public class OverlayService extends Service {
     public static final String EX_HARD = "hard";
     public static final String EX_HOST = "host";
     public static final String EX_PKG = "pkg";
+    public static final String EX_URL = "url";
 
     private WindowManager wm;
     private View overlay;
@@ -53,11 +54,12 @@ public class OverlayService extends Service {
                 intent.getIntExtra(EX_SCORE, 0),
                 intent.getBooleanExtra(EX_HARD, false),
                 intent.getStringExtra(EX_HOST),
-                intent.getStringExtra(EX_PKG));
+                intent.getStringExtra(EX_PKG),
+                intent.getStringExtra(EX_URL));
         return START_NOT_STICKY;
     }
 
-    private void show(String title, String body, int score, boolean hard, String host, String pkg) {
+    private void show(String title, String body, int score, boolean hard, String host, String pkg, String url) {
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         overlay = LayoutInflater.from(this).inflate(R.layout.overlay_warning, null);
 
@@ -76,18 +78,22 @@ public class OverlayService extends Service {
             if (!hard) FraudAccessibilityService.leaveSite(pkg);
         });
 
-        if (hard) {
-            proceed.setVisibility(View.GONE);
-        } else {
-            proceed.setOnClickListener(v -> {
-                proceed.setEnabled(false);
-                // require the user to confirm with fingerprint / face / PIN
-                Intent gate = new Intent(this, com.cybershield.app.ui.ProceedGateActivity.class)
-                        .putExtra(EX_HOST, host)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                startActivity(gate);
-            });
-        }
+        // Even on a dangerous site the user may continue with their own consent, but only after confirming with
+        // their fingerprint / face / PIN. That confirmation is what lets Secure Me report it to the dashboard.
+        proceed.setVisibility(View.VISIBLE);
+        proceed.setText("I understand the risk, continue");
+        proceed.setOnClickListener(v -> {
+            proceed.setEnabled(false);
+            Intent gate = new Intent(this, com.cybershield.app.ui.ProceedGateActivity.class)
+                    .putExtra(EX_HOST, host)
+                    .putExtra(EX_PKG, pkg)
+                    .putExtra(EX_URL, url)
+                    .putExtra(EX_SCORE, score)
+                    .putExtra(EX_HARD, hard)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(gate);
+            proceed.postDelayed(() -> proceed.setEnabled(true), 2500);   // allow another try if it was cancelled
+        });
 
         int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY

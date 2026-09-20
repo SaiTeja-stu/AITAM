@@ -139,7 +139,9 @@ public class FraudAccessibilityService extends AccessibilityService {
         final boolean strict = prefs.strictMode();
         io.execute(() -> {
             try {
+                long t0 = SystemClock.elapsedRealtime();
                 AnalyzeResponse v = CyberShieldApp.get().analyzer().analyze("URL", target, null);
+                long analyzeMs = SystemClock.elapsedRealtime() - t0;
 
                 if (v.trusted) return;   // on the verified safe list — never interrupt
 
@@ -147,7 +149,11 @@ public class FraudAccessibilityService extends AccessibilityService {
                 String impersonated = BrowserPageReader.impersonatedBrand(fPage, fHost);
                 boolean pagePhish = impersonated != null && !v.trusted;
 
-                Log.i(TAG, "browser " + fHost + " -> " + v.riskLevel + " " + v.riskScore
+                // A fake sign-in page that impersonates a brand is high risk even when the address alone looks
+                // clean, so never show "Risk 0/100" on a "Deceptive site" warning.
+                final int score = pagePhish ? Math.max(v.riskScore, 85) : v.riskScore;
+
+                Log.i(TAG, "browser " + fHost + " -> " + v.riskLevel + " " + score + " analyzeMs=" + analyzeMs
                         + " pw=" + fPage.hasPasswordField + " impersonates=" + impersonated + " strict=" + strict);
 
                 boolean malicious = "MALICIOUS".equals(v.riskLevel) || pagePhish;
@@ -156,7 +162,7 @@ public class FraudAccessibilityService extends AccessibilityService {
                 boolean unverified = !v.trusted && !malicious && !high && !suspicious;
 
                 if (malicious || high || (strict && (suspicious || unverified))) {
-                    showBrowserOverlay(pkg, v, fHost, malicious || (strict && high), unverified, impersonated);
+                    showBrowserOverlay(pkg, v, fHost, target, score, malicious || (strict && high), unverified, impersonated);
                     prefs.markAction();
                 }
             } catch (Throwable ignored) {
@@ -165,7 +171,8 @@ public class FraudAccessibilityService extends AccessibilityService {
         });
     }
 
-    private void showBrowserOverlay(String pkg, AnalyzeResponse v, String host, boolean hard, boolean unverified,
+    private void showBrowserOverlay(String pkg, AnalyzeResponse v, String host, String fullUrl, int score,
+                                    boolean hard, boolean unverified,
                                     String impersonatedBrand) {
         StringBuilder body = new StringBuilder();
         body.append(host).append("\n\n");
@@ -197,7 +204,8 @@ public class FraudAccessibilityService extends AccessibilityService {
                 : hard ? "Dangerous site - do not continue"
                 : unverified ? "Unverified site - be careful" : "This site looks risky");
         i.putExtra(OverlayService.EX_BODY, body.toString());
-        i.putExtra(OverlayService.EX_SCORE, v.riskScore);
+        i.putExtra(OverlayService.EX_SCORE, score);
+        i.putExtra(OverlayService.EX_URL, fullUrl);
         i.putExtra(OverlayService.EX_HARD, hard && !prefs.warnOnly());
         i.putExtra(OverlayService.EX_HOST, host);
         i.putExtra(OverlayService.EX_PKG, pkg);
