@@ -74,7 +74,7 @@ public class SecurityConfig {
                 // Static dashboard & forensic console
                 .requestMatchers(HttpMethod.GET,
                                  "/", "/index.html", "/favicon.ico", "/favicon.svg",
-                                 "/assets/**", "/dashboard/**", "/vite.svg",
+                                 "/assets/**", "/dashboard/**", "/vite.svg", "/logo.jpg", "/logo.png",
                                  "/investigate.html", "/forensics.html").permitAll()
                 .requestMatchers("/api/v1/admin/**", "/api/v1/stats/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").authenticated()
