@@ -13,12 +13,13 @@ android {
         versionCode 1
         versionName "0.1.0"
 
-        // Default backend URL. Overridable in-app (Auth screen -> "Server" line).
-        //  - phone on same Wi-Fi : your PC's LAN IP, e.g. http://10.10.84.80:8899/
-        //  - emulator            : http://10.0.2.2:8899/
+        // Default backend URL: the hosted Render server (works on any network). Overridable in-app (Auth screen -> "Server" line)
+        // or at build time with -PapiBaseUrl=... ; for the laptop over USB use adb reverse + http://127.0.0.1:8899/
         //  - USB (adb reverse)   : http://127.0.0.1:8899/
+        //  - phone on same Wi-Fi : your PC's current LAN IP, e.g. http://172.30.65.255:8899/
+        //  - emulator            : http://10.0.2.2:8899/
         buildConfigField "String", "API_BASE_URL",
-                "\"" + (project.findProperty("apiBaseUrl") ?: "http://10.10.84.80:8899/") + "\""
+                "\"" + (project.findProperty("apiBaseUrl") ?: "https://cybershield-backend-b7tm.onrender.com/") + "\""
     }
 
     buildFeatures {
@@ -74,8 +75,12 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.11.0'
 
+    // Device GPS for geo-tagging fraud incident reports (SIH26106 GeoLocation requirement)
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+
     // On-device detection engine (ported from the backend)
     implementation 'org.jsoup:jsoup:1.18.1'
     implementation 'org.apache.commons:commons-text:1.12.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    testImplementation 'junit:junit:4.13.2'
 }
