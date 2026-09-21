@@ -95,7 +95,7 @@ public class ExplanationService {
             String id = s.policyId();
             if (id.startsWith("URL")) v.addCategory("suspicious-link");
             if (id.equals("URL-01") || id.equals("URL-05")) v.addCategory("brand-impersonation");
-            if (id.equals("URL-14")) v.addCategory("piracy-or-gambling");
+            if (id.equals("URL-14") || id.equals("MSG-07")) v.addCategory("piracy-or-gambling");
             if (id.startsWith("WEB")) v.addCategory("phishing-page");
             if (id.equals("MSG-02")) v.addCategory("credential-theft");
             if (id.equals("MSG-03") || id.startsWith("QR")) v.addCategory("payment-fraud");

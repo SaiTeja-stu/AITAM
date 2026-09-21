@@ -28,7 +28,7 @@ final class Keywords {
             "collect request", "approve request to get");
 
     static final List<String> PRIZE_JOB = List.of(
-            "you have won", "congratulations you", "lottery", "lucky draw", "prize money",
+            "you have won", "you won", "you've won", "you have been selected", "claim now", "cash prize", "congratulations you", "lottery", "lucky draw", "prize money",
             "claim your reward", "work from home", "earn daily", "part time job", "registration fee",
             "processing fee", "refundable deposit", "task based", "telegram job", "rating job");
 

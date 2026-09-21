@@ -35,7 +35,7 @@ public class TyposquattingPolicy extends AbstractPolicy {
                 if (label.equals(brand)) continue;
                 int d = safeDistance(label, brand);
                 boolean contains = label.contains(brand) && !label.equals(brand);
-                if ((d >= 1 && d <= 2 && Math.abs(label.length() - brand.length()) <= 2)
+                if ((brand.length() >= 5 && d >= 1 && d <= (brand.length() <= 6 ? 1 : 2) && Math.abs(label.length() - brand.length()) <= 2)
                         || (contains && label.length() <= brand.length() + 6)) {
                     out.add(signal("Look-alike domain",
                             "'" + u.host() + "' closely imitates the brand '" + brand + "'.",

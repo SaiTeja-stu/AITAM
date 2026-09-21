@@ -75,7 +75,12 @@ public class SmsReceiver extends BroadcastReceiver {
         });
     }
 
+    private static String lastKey = "";
+    private static long lastAt = 0L;
+
     private void triage(Context ctx, String sender, String text, boolean risky, boolean fraud, String reason) {
+        ShieldPrefs prefs = new ShieldPrefs(ctx);
+
         // community number-reputation: has this exact sender been reported+confirmed before?
         boolean reportedNumber = false;
         try {
@@ -86,18 +91,46 @@ public class SmsReceiver extends BroadcastReceiver {
 
         SmsClassifier.Category cat = reportedNumber ? SmsClassifier.Category.FRAUD
                 : SmsClassifier.classify(sender, text, risky, fraud);
-        if (!SmsClassifier.isAlertWorthy(cat)) return;   // OTP / bank / promo -> stay quiet
+
+        // Under TRAI DLT regulations: genuine OTP, Transactional, Service, Government
+        // communications from registered headers must NEVER trigger false fraud alarms.
+        if (prefs.suppressLegitBankAlerts() && (cat == SmsClassifier.Category.OTP
+                || cat == SmsClassifier.Category.TRANSACTIONAL
+                || cat == SmsClassifier.Category.SERVICE
+                || cat == SmsClassifier.Category.GOVERNMENT
+                || cat == SmsClassifier.Category.PERSONAL)) {
+            return;
+        }
+
+        // Promotional messages only alert if user opted in
+        if (cat == SmsClassifier.Category.PROMOTIONAL && !prefs.notifyOnPromo()) {
+            return;
+        }
+
+        if (!SmsClassifier.isAlertWorthy(cat) && !(cat == SmsClassifier.Category.PROMOTIONAL && prefs.notifyOnPromo())) {
+            return;
+        }
 
         if (reason == null && reportedNumber) {
             reason = "This sender has been reported for fraud by other Secure Me users";
+        } else if (SmsClassifier.lookAlikeSenderHeader(sender)) {
+            reason = "Spoofed / look-alike sender header attempting to impersonate an authentic registered entity";
         } else if (reason == null
                 && SmsClassifier.impersonatesInstitution(text.toLowerCase())
                 && !SmsClassifier.looksLikeRegisteredSender(sender)) {
-            reason = "Claims to be from a bank/official body but was sent from a personal number — "
-                    + "genuine institutional SMS only come from a registered sender ID (e.g. VM-HDFCBK)";
+            reason = "Claims to be from a bank/official body but was sent from an unregistered / personal number — "
+                    + "under TRAI DLT regulations, genuine institutional SMS only originate from registered sender IDs (e.g. VK-HDFCBK-T)";
         }
 
-        ShieldPrefs prefs = new ShieldPrefs(ctx);
+        // analyze() reports up to three times (instant, on-device, server): warn once per message
+        synchronized (SmsReceiver.class) {
+            String key = sender + "|" + text.hashCode() + "|" + cat;
+            long now = System.currentTimeMillis();
+            if (key.equals(lastKey) && now - lastAt < 15_000) return;
+            lastKey = key;
+            lastAt = now;
+        }
+
         int total = prefs.bumpSpamSmsCount();
 
         boolean isFraud = cat == SmsClassifier.Category.FRAUD;
