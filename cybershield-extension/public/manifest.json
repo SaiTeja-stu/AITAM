@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Cyber Shield",
+  "name": "Secure Me",
   "version": "0.1.0",
   "description": "Checks the current page, links, emails and selected text for phishing and scams, and explains why.",
   "permissions": ["activeTab", "scripting", "contextMenus", "storage", "notifications"],
@@ -11,7 +11,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Cyber Shield — check this page",
+    "default_title": "Secure Me — check this page",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

@@ -1,4 +1,5 @@
 import type { AnalyzeRequest, AnalyzeResponse } from './types';
+import { localAnalyze } from './local';
 
 const DEFAULT_BASE = 'http://localhost:8899';
 
@@ -45,12 +46,17 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 
 export async function login(username: string, password: string): Promise<void> {
   const { baseUrl } = await getSettings();
-  const res = await fetch(baseUrl.replace(/\/$/, '') + '/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!res.ok) throw new Error('Invalid username or password.');
+  let res: Response;
+  try {
+    res = await fetch(baseUrl.replace(/\/$/, '') + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login: username, password }),
+    });
+  } catch {
+    throw new Error('Cannot reach ' + baseUrl + '. Check the URL. On the Render free plan the first request can take about a minute to wake the server; try again.');
+  }
+  if (!res.ok) throw new Error(res.status === 401 || res.status === 400 ? 'Invalid username or password.' : 'Server error (' + res.status + '). Try again.');
   const data = await res.json();
   await setSettings({ token: data.accessToken });
 }
@@ -59,8 +65,33 @@ export async function logout(): Promise<void> {
   await setSettings({ token: '' });
 }
 
-export function analyze(payload: AnalyzeRequest): Promise<AnalyzeResponse> {
-  return req<AnalyzeResponse>('POST', '/api/v1/analyze', payload);
+/**
+ * Always runs the offline checks (piracy / betting / crack sites, lookalike domains ...) and, when
+ * signed in and reachable, merges them with the server verdict, keeping whichever is riskier.
+ */
+export async function analyze(payload: AnalyzeRequest): Promise<AnalyzeResponse> {
+  const local = localAnalyze(payload);
+  const { token } = await getSettings();
+  if (!token) return local;
+  let server: AnalyzeResponse;
+  try {
+    server = await req<AnalyzeResponse>('POST', '/api/v1/analyze', payload);
+  } catch {
+    return local; // backend down / signed out
+  }
+  if (local.riskScore <= server.riskScore) return server;
+  const seen = new Set(server.signals.map((s) => s.policyId));
+  return {
+    ...server,
+    riskScore: local.riskScore,
+    riskLevel: local.riskLevel,
+    priority: local.priority,
+    wording: local.wording,
+    confidence: Math.max(server.confidence, local.confidence),
+    signals: [...server.signals, ...local.signals.filter((s) => !seen.has(s.policyId))],
+    explanation: local.explanation.replace('  (offline check — backend not connected)', ''),
+    recommendations: [...new Set([...local.recommendations, ...server.recommendations])],
+  };
 }
 
 export function report(type: string, content: string, note: string): Promise<unknown> {

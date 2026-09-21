@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Cyber Shield</title>
+    <title>Secure Me</title>
     <style>
       :root { color-scheme: dark; }
       * { box-sizing: border-box; }
@@ -12,8 +12,7 @@
         background: #0b1020; color: #e7ecf5;
       }
       h1 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
-      .logo { width: 20px; height: 20px; background: #38bdf8; border-radius: 5px;
-              display: grid; place-items: center; color: #0b1020; font-weight: 700; font-size: 11px; }
+      .logo { width: 22px; height: 22px; border-radius: 5px; }
       .muted { color: #93a0bc; }
       .row { display: flex; gap: 8px; align-items: center; }
       .badge { padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; }
@@ -40,7 +39,8 @@
     </style>
   </head>
   <body>
-    <h1><span class="logo">CS</span> Cyber Shield</h1>
+    <h1><img class="logo" src="icons/icon48.png" alt="" /> Secure Me</h1>
+    <div id="mode" class="muted" style="margin:-4px 0 8px;font-size:12px"></div>
 
     <div id="needLogin" class="card hidden">
       <p>You're not signed in.</p>

@@ -1,4 +1,4 @@
-# Cyber Shield — Chrome Extension
+# Secure Me — Chrome Extension
 
 Category-A client for the [Cyber Shield backend](../cybershield-backend):
 checks the current page, links, and selected text for phishing / scams.

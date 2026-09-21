@@ -54,6 +54,19 @@ export type CsMessage =
   | { kind: 'GET_PAGE_CONTEXT' }
   | { kind: 'GET_SELECTION' };
 
+/** content script -> background */
+export type BgMessage =
+  | { kind: 'PAGE_LOADED'; ctx: PageContext }
+  | { kind: 'HAS_OVERRIDE' }
+  | { kind: 'SET_OVERRIDE'; password: string }
+  | { kind: 'VERIFY_OVERRIDE'; password: string };
+
+export interface PageVerdict {
+  level: RiskLevel;
+  score: number;
+  reasons: string[];
+}
+
 export interface PageContext {
   url: string;
   title: string;

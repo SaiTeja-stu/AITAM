@@ -28,6 +28,13 @@ class GenuineMessageTest {
     }
 
     @Test
+    void the_words_one_time_password_are_not_a_credential_request() {
+        var urgency = new UrgencyAndCredentialPolicy();
+        assertThat(urgency.evaluate(sms("Dear Customer, 4690 is your One Time Password (OTP) for login. Never share your password or OTP with anyone."))).isEmpty();
+        assertThat(urgency.evaluate(sms("Your net banking password has expired. Enter your password and card number at once."))).isNotEmpty();
+    }
+
+    @Test
     void asking_the_reader_for_an_otp_is_still_critical() {
         assertThat(otp.evaluate(sms("Dear user please share your OTP with our executive to complete KYC"))).hasSize(1);
         assertThat(otp.evaluate(sms("Tell me the OTP you just received"))).hasSize(1);

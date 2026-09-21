@@ -10,9 +10,13 @@ import com.cybershield.app.engine.LocalVerdict;
 import com.cybershield.app.engine.UpiUri;
 import com.cybershield.app.net.dto.AnalyzeRequest;
 import com.cybershield.app.net.dto.AnalyzeResponse;
+import com.cybershield.app.net.dto.IncidentReportRequest;
+import com.cybershield.app.net.dto.IncidentReportResponse;
 import com.cybershield.app.net.dto.ReportRequest;
 import com.cybershield.app.util.Redact;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,6 +93,53 @@ public class Repository {
             } catch (Exception ignored) {
             }
         });
+    }
+
+    public interface IncidentCallback {
+        void onLodged(IncidentReportResponse response);
+        void onFailed(String message);
+    }
+
+    /**
+     * Lodges a geo-tagged incident report with the forensic backend, which
+     * routes it to the nearest Cyber Crime Police Station jurisdiction based
+     * on the GPS coordinates captured via {@link com.cybershield.app.geo.LocationHelper}.
+     * Pass (0,0) for lat/lon when a GPS fix could not be obtained.
+     */
+    public void reportIncident(String type, String content, String riskTier, int riskScore,
+                                double userLat, double userLon, float accuracyMeters,
+                                String networkProvider, IncidentCallback cb) {
+        io.execute(() -> {
+            try {
+                String evidenceSha256 = sha256(content);
+                IncidentReportRequest req = new IncidentReportRequest(
+                        evidenceSha256, type, content, riskTier, riskScore,
+                        userLat, userLon, accuracyMeters, networkProvider,
+                        "Reported from Secure Me Android app");
+                retrofit2.Response<IncidentReportResponse> resp =
+                        CyberShieldApp.get().api().api().reportIncident(req).execute();
+                if (resp.isSuccessful() && resp.body() != null) {
+                    IncidentReportResponse body = resp.body();
+                    main.post(() -> cb.onLodged(body));
+                } else {
+                    main.post(() -> cb.onFailed("Server rejected the incident report"));
+                }
+            } catch (Exception e) {
+                main.post(() -> cb.onFailed("Could not reach the server — check your connection"));
+            }
+        });
+    }
+
+    private static String sha256(String content) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            return "sha256-error";
+        }
     }
 
     private LocalVerdict localCheck(String type, String content) {

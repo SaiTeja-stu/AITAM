@@ -102,17 +102,14 @@ function renderError(e: unknown) {
 }
 
 async function run() {
+  const { token, baseUrl } = await getSettings();
+  $('mode').textContent = token
+    ? 'Online: checks run in your browser and on ' + baseUrl.replace(/^https?:\/\//, '')
+    : 'Offline mode: checks run in your browser. Sign in (settings) to add server checks and reporting.';
   show('needLogin', false);
   show('error', false);
   show('result', false);
   show('loading', true);
-
-  const { token } = await getSettings();
-  if (!token) {
-    show('loading', false);
-    show('needLogin', true);
-    return;
-  }
 
   const tab = await activeTab();
   if (!tab?.id || !tab.url || !/^https?:/.test(tab.url)) {
@@ -140,7 +137,7 @@ $('recheck').addEventListener('click', run);
 $('toOptions').addEventListener('click', () => chrome.runtime.openOptionsPage());
 $('dashboard').addEventListener('click', async () => {
   const { baseUrl } = await getSettings();
-  chrome.tabs.create({ url: baseUrl.replace(/\/$/, '') + '/swagger-ui.html' });
+  chrome.tabs.create({ url: baseUrl.replace(/\/$/, '') + '/' });
 });
 $('scanSelection').addEventListener('click', async () => {
   const tab = await activeTab();
@@ -165,8 +162,8 @@ $('report').addEventListener('click', async () => {
   try {
     await report(lastAnalyzed.type, lastAnalyzed.content, 'reported from extension');
     btn.textContent = 'Reported ✓';
-  } catch {
-    btn.textContent = 'Report failed';
+  } catch (e) {
+    btn.textContent = e instanceof AuthError ? 'Sign in to report' : 'Report failed';
     btn.disabled = false;
   }
 });
