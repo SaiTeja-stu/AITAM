@@ -510,7 +510,9 @@
                 android:orientation="vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless">
+                android:layout_margin="7dp"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/bg_dock_active">
 
                 <ImageView
                     android:id="@+id/iconShield"
