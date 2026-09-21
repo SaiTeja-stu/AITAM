@@ -7,6 +7,7 @@ import Reset from './pages/Reset.jsx';
 import Overview from './pages/Overview.jsx';
 import Queue from './pages/Queue.jsx';
 import AnalyzeConsole from './pages/AnalyzeConsole.jsx';
+import EmailForensics from './pages/EmailForensics.jsx';
 import Reports from './pages/Reports.jsx';
 import Education from './pages/Education.jsx';
 import Users from './pages/Users.jsx';
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="/" element={<Overview />} />
         <Route path="/queue" element={<Queue />} />
         <Route path="/analyze" element={<AnalyzeConsole />} />
+        <Route path="/forensics" element={<EmailForensics />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/education" element={<Education />} />
         <Route path="/users" element={<Users />} />

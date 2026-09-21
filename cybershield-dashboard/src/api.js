@@ -53,5 +53,18 @@ export const api = {
   rejectReport: (id) => request('POST', `/api/v1/admin/reports/${id}/reject`),
   users: () => request('GET', '/api/v1/admin/users'),
   storage: () => request('GET', '/api/v1/admin/storage'),
+  forensicsSamples: () => request('GET', '/api/v1/forensics/samples'),
+  forensicsSample: (id) => request('GET', `/api/v1/forensics/samples/${encodeURIComponent(id)}`),
+  forensicsAnalyze: (rawEml) => request('POST', '/api/v1/forensics/analyze-raw', { rawEml }),
+  forensicsPdf: async (rawEml) => {
+    const token = getToken();
+    const res = await fetch('/api/v1/forensics/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ rawEml }),
+    });
+    if (!res.ok) throw new Error('Could not create the PDF (' + res.status + ')');
+    return res.blob();
+  },
   education: (lang = 'en') => request('GET', `/api/v1/education/modules?lang=${encodeURIComponent(lang)}`),
 };

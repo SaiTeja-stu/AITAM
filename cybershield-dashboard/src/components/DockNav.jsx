@@ -4,6 +4,7 @@ const ITEMS = [
   { to: '/', label: 'Overview', end: true },
   { to: '/queue', label: 'Queue' },
   { to: '/analyze', label: 'Analyze' },
+  { to: '/forensics', label: 'E-mail Forensics' },
   { to: '/reports', label: 'Reports' },
   { to: '/education', label: 'Education' },
   { to: '/users', label: 'Users & Data' },
