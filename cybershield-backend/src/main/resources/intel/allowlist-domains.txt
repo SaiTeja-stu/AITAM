@@ -29,3 +29,10 @@ rbi.org.in
 linkedin.com
 github.com
 wikipedia.org
+hdfcbank.net
+kotak.com
+sbicard.com
+swiggy.com
+zomato.com
+jio.com
+airtel.in

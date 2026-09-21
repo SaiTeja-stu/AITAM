@@ -260,8 +260,8 @@ public final class SmsClassifier {
         if (h.length() < 5) return false;
         for (String real : KNOWN_HEADERS) {
             if (h.equals(real)) return false; // exact = legitimate, stop
-            // a real brand with a letter or two added at either end (IPAYTM, PAYTMB, ATMHDFC) is a genuine variant
-            if (real.length() >= 5 && h.contains(real)) return false;
+            // a real brand with a letter or two added in front (IPAYTM, ATMHDFC) is a genuine variant
+            if (real.length() >= 5 && h.endsWith(real) && h.length() <= real.length() + 2) return false;
             // same brand family (PAYTMB / PAYTM, ICICIT / ICICIB): a real variant, not a spoof
             if (real.length() <= 5 && h.startsWith(real)) return false;
         }
