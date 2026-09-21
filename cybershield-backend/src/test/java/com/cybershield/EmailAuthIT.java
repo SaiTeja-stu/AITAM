@@ -69,7 +69,7 @@ class EmailAuthIT {
     void register_then_verify_then_login() throws Exception {
         String email = "flowuser@example.com";
         var reg = post("/auth/register",
-                "{\"email\":\"" + email + "\",\"username\":\"flowuser\",\"password\":\"averylongpassword12\"}");
+                "{\"email\":\"" + email + "\",\"username\":\"flowuser\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}");
         assertThat(reg.statusCode()).isEqualTo(202);
 
         // login is blocked before verification
@@ -93,7 +93,7 @@ class EmailAuthIT {
     void wrong_otp_is_rejected() {
         String email = "badotp@example.com";
         post("/auth/register",
-                "{\"email\":\"" + email + "\",\"username\":\"badotp\",\"password\":\"averylongpassword12\"}");
+                "{\"email\":\"" + email + "\",\"username\":\"badotp\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}");
         captureVerificationCode(email);
         var r = post("/auth/verify-email", "{\"email\":\"" + email + "\",\"code\":\"000000\"}");
         assertThat(r.statusCode()).isEqualTo(400);
@@ -103,7 +103,7 @@ class EmailAuthIT {
     void forgot_password_flow_resets_and_allows_login() {
         String email = "resetme@example.com";
         post("/auth/register",
-                "{\"email\":\"" + email + "\",\"username\":\"resetme\",\"password\":\"averylongpassword12\"}");
+                "{\"email\":\"" + email + "\",\"username\":\"resetme\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}");
         String verifyCode = captureVerificationCode(email);
         post("/auth/verify-email", "{\"email\":\"" + email + "\",\"code\":\"" + verifyCode + "\"}");
         reset(mail);
@@ -124,9 +124,9 @@ class EmailAuthIT {
     }
 
     @Test
-    void forgot_password_for_unknown_email_is_still_generic_200() {
+    void forgot_password_for_unknown_email_says_no_account() {
         var r = post("/auth/forgot-password", "{\"email\":\"nobody-here@example.com\"}");
-        assertThat(r.statusCode()).isEqualTo(200);
+        assertThat(r.statusCode()).isEqualTo(404);
         verify(mail, never()).sendPasswordResetOtp(any(), any(), any(), any(), any());
     }
 }

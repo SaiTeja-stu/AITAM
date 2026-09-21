@@ -175,19 +175,19 @@ class ApiSecurityIT {
     }
 
     @Test
-    void register_response_is_generic_and_does_not_leak_existing_account() {
+    void register_tells_the_user_when_the_account_already_exists() {
         var fresh = send("POST", "/auth/register",
-                "{\"email\":\"fresh-user@example.com\",\"username\":\"freshu\",\"password\":\"averylongpassword12\"}", null);
+                "{\"email\":\"fresh-user@example.com\",\"username\":\"freshu\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}", null);
         var taken = send("POST", "/auth/register",
-                "{\"email\":\"admin@cybershield.test\",\"username\":\"admin\",\"password\":\"averylongpassword12\"}", null);
-        assertThat(fresh.statusCode()).isEqualTo(taken.statusCode());
-        assertThat(fresh.body()).isEqualTo(taken.body());
+                "{\"email\":\"admin@cybershield.test\",\"username\":\"admin\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}", null);
+        assertThat(fresh.statusCode()).isEqualTo(202);
+        assertThat(taken.statusCode()).isEqualTo(409);
     }
 
     @Test
     void non_admin_cannot_reach_stats() {
         send("POST", "/auth/register",
-                "{\"email\":\"plainuser@example.com\",\"username\":\"plainuser\",\"password\":\"averylongpassword12\"}", null);
+                "{\"email\":\"plainuser@example.com\",\"username\":\"plainuser\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}", null);
         var login = send("POST", "/auth/login",
                 "{\"login\":\"plainuser\",\"password\":\"averylongpassword12\"}", null);
         String token;
@@ -259,7 +259,7 @@ class ApiSecurityIT {
     @Test
     void non_admin_cannot_list_reports() {
         send("POST", "/auth/register",
-                "{\"email\":\"plainuser2@example.com\",\"username\":\"plainuser2\",\"password\":\"averylongpassword12\"}", null);
+                "{\"email\":\"plainuser2@example.com\",\"username\":\"plainuser2\",\"password\":\"averylongpassword12\",\"acceptTerms\":true}", null);
         var login = send("POST", "/auth/login",
                 "{\"login\":\"plainuser2\",\"password\":\"averylongpassword12\"}", null);
         String token;
