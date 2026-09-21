@@ -67,7 +67,7 @@ public class OverlayService extends Service {
         ((TextView) overlay.findViewById(R.id.ovBody)).setText(body);
         TextView scoreView = overlay.findViewById(R.id.ovScore);
         scoreView.setText("Risk " + score + "/100");
-        scoreView.setTextColor(score >= 75 ? Color.parseColor("#F87171") : Color.parseColor("#FB923C"));
+        scoreView.setTextColor(score >= 75 ? Color.parseColor("#E5484D") : Color.parseColor("#F08A3C"));
 
         Button dismiss = overlay.findViewById(R.id.ovDismiss);
         Button proceed = overlay.findViewById(R.id.ovProceed);

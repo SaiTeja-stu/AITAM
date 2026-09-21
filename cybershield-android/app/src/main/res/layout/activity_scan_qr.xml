@@ -9,11 +9,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_back"
+        android:tint="@android:color/white"
+        android:background="@drawable/bg_stat_card"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Back" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:padding="24dp"
+        android:paddingTop="70dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="Point at a QR code. The payload is checked before you can pay."
         android:textColor="@android:color/white" />
 

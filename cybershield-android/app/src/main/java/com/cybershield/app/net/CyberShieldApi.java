@@ -2,6 +2,9 @@ package com.cybershield.app.net;
 
 import com.cybershield.app.net.dto.AnalyzeRequest;
 import com.cybershield.app.net.dto.AnalyzeResponse;
+import com.cybershield.app.net.dto.ForensicsResult;
+import com.cybershield.app.net.dto.IncidentReportRequest;
+import com.cybershield.app.net.dto.IncidentReportResponse;
 import com.cybershield.app.net.dto.Page;
 import com.cybershield.app.net.dto.ReportRequest;
 import com.cybershield.app.net.dto.TokenResponse;
@@ -10,18 +13,20 @@ import com.cybershield.app.ui.EduAdapter;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
 
 public interface CyberShieldApi {
 
     // ---- auth ----
     @POST("auth/register")
-    Call<Map<String, String>> register(@Body Map<String, String> body);
+    Call<Map<String, String>> register(@Body Map<String, Object> body);
 
     @POST("auth/verify-email")
     Call<Map<String, String>> verifyEmail(@Body Map<String, String> body);
@@ -53,6 +58,20 @@ public interface CyberShieldApi {
 
     @POST("api/v1/report")
     Call<Map<String, String>> report(@Body ReportRequest request);
+
+    // ---- forensics / geolocation ----
+    @POST("api/v1/forensics/incident-report")
+    Call<IncidentReportResponse> reportIncident(@Body IncidentReportRequest request);
+
+    @POST("api/v1/forensics/analyze-raw")
+    Call<ForensicsResult> analyzeForensicsRaw(@Body Map<String, String> body);
+
+    @POST("api/v1/forensics/export-pdf")
+    @Streaming
+    Call<ResponseBody> exportForensicsPdf(@Body Map<String, String> body);
+
+    @GET("api/v1/forensics/samples")
+    Call<List<Map<String, String>>> forensicsSamples();
 
     @GET("api/v1/education/modules")
     Call<List<EduAdapter.Module>> educationModules();

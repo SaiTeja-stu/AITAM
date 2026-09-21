@@ -62,6 +62,18 @@ public class EduDetailActivity extends AppCompatActivity {
         outer.setBackgroundResource(com.cybershield.app.R.drawable.bg_gradient);
         outer.setPadding(pad, pad, pad, 0);
 
+        ImageView back = new ImageView(this);
+        back.setImageResource(com.cybershield.app.R.drawable.ic_back);
+        back.setColorFilter(getColor(com.cybershield.app.R.color.text));
+        back.setPadding(dp(6), dp(6), dp(6), dp(6));
+        back.setContentDescription("Back");
+        back.setOnClickListener(v -> finish());
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(dp(36), dp(36));
+        bp.bottomMargin = dp(8);
+        back.setLayoutParams(bp);
+        back.setBackgroundResource(android.R.drawable.list_selector_background);
+        outer.addView(back);
+
         // language switch
         ChipGroup cg = new ChipGroup(this);
         cg.setSingleSelection(true);
@@ -158,7 +170,7 @@ public class EduDetailActivity extends AppCompatActivity {
             box.setTextColor(getColor(com.cybershield.app.R.color.text));
             box.setPadding(dp(16), dp(16), dp(16), dp(16));
             GradientDrawable bg = new GradientDrawable();
-            bg.setColor(0xFF10233A);
+            bg.setColor(0xFF0F2418);
             bg.setStroke(dp(2), getColor(com.cybershield.app.R.color.sky));
             bg.setCornerRadius(dp(12));
             box.setBackground(bg);

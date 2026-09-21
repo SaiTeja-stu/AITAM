@@ -3,110 +3,293 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/cyber_dark_bg"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:gravity="center_horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp">
 
+        <!-- 1. Hero Emblem Logo -->
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:src="@drawable/ic_logo"
+            android:contentDescription="Secure Me Emblem"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 2. Brand Title & Military Badge -->
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/brandTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign in"
+            android:text="Secure Me"
             android:textColor="@color/text"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02" />
 
         <TextView
-            android:id="@+id/subtitle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="@color/muted"
-            android:text="Use your Secure Me account." />
+            android:background="@drawable/bg_pill_toggle"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="MILITARY-GRADE THREAT INTERCEPTION"
+            android:textColor="@color/cyber_emerald"
+            android:textSize="9.5sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:layout_marginBottom="18dp" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilLogin"
-            style="@style/AuthField"
-            android:hint="Email or username">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etLogin" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:inputType="textEmailAddress" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilUsername"
-            style="@style/AuthField"
-            android:hint="Username"
-            android:visibility="gone">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etUsername" android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPassword"
-            style="@style/AuthField"
-            android:hint="Password"
-            app:passwordToggleEnabled="true">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPassword" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:inputType="textPassword" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilCode"
-            style="@style/AuthField"
-            android:hint="6-digit code from email"
-            android:visibility="gone">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCode" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:inputType="number" android:maxLength="6" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/message"
+        <!-- 3. Frosted Titanium Authentication Card -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/risk_suspicious"
-            android:visibility="gone" />
+            android:background="@drawable/bg_auth_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPrimary"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sign In"
+                android:textColor="@color/text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/muted"
+                android:textSize="12.5sp"
+                android:text="Use your Secure Me security identity." />
+
+            <!-- Login / Email Field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilLogin"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Email or username"
+                app:startIconDrawable="@drawable/ic_account_user"
+                app:startIconTint="@color/cyber_emerald"
+                app:boxStrokeColor="@color/cyber_dock_stroke"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusBottomEnd="14dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/text"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Username Field (Sign up mode) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUsername"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Username"
+                app:startIconDrawable="@drawable/ic_account_user"
+                app:startIconTint="@color/cyber_emerald"
+                app:boxStrokeColor="@color/cyber_dock_stroke"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusBottomEnd="14dp"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Password Field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Password"
+                app:startIconDrawable="@drawable/ic_lock_key"
+                app:startIconTint="@color/cyber_emerald"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/muted"
+                app:boxStrokeColor="@color/cyber_dock_stroke"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusBottomEnd="14dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textColor="@color/text"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 6-digit Code Field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCode"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="6-digit verification code"
+                app:boxStrokeColor="@color/cyber_dock_stroke"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusBottomEnd="14dp"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:textColor="@color/text"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Terms & Conditions (sign-up only) -->
+            <LinearLayout
+                android:id="@+id/termsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbTerms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvTerms"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Error message feedback -->
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/risk_suspicious"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <!-- Forgot password link -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnForgot"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/cyber_emerald"
+                android:text="Reset Security Key?"
+                android:textSize="12sp" />
+
+            <!-- Primary Action Button: AUTHORIZE & CONNECT -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPrimary"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_primary_cyber_btn"
+                app:backgroundTint="@null"
+                android:text="AUTHORIZE &amp; CONNECT"
+                android:textColor="#04120A"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04" />
+
+            <!-- Secondary Action / Mode Switcher -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSecondary"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                app:icon="@drawable/ic_fingerprint"
+                app:iconTint="@color/cyber_emerald"
+                app:strokeColor="@color/cyber_dock_stroke"
+                android:textColor="@color/text"
+                android:text="Create an account"
+                android:textSize="12.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 4. Security Compliance Footer -->
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Sign in" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSecondary"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Create an account" />
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_lock_key"
+                app:tint="@color/text_dim"
+                android:layout_marginEnd="6dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnForgot"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Forgot password?" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FIPS 140-3 COMPLIANT • HARDWARE ENCLAVE ENCRYPTED"
+                android:textColor="@color/text_dim"
+                android:textSize="9.5sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+        </LinearLayout>
 
+        <!-- Server config info -->
         <TextView
             android:id="@+id/serverInfo"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:gravity="center"
             android:padding="8dp"
-            android:textColor="@color/muted"
-            android:textSize="12sp"
+            android:textColor="@color/text_dim"
+            android:textSize="11sp"
             android:text="Server: (default)" />
 
     </LinearLayout>

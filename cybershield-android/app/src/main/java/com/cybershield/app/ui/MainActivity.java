@@ -228,8 +228,8 @@ public class MainActivity extends AppCompatActivity {
             List<ScanEntity> recent = rows.subList(0, Math.min(6, rows.size()));
             final int ft = total, fth = threats;
             main.post(() -> {
-                b.statChecks.setText(String.valueOf(ft));
-                b.statThreats.setText(String.valueOf(fth));
+                Motion.countUp(b.statChecks, ft);
+                Motion.countUp(b.statThreats, fth);
                 recentAdapter.set(recent);
                 b.recentEmpty.setVisibility(recent.isEmpty() ? View.VISIBLE : View.GONE);
             });

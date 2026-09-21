@@ -10,13 +10,33 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="System-wide protection"
-            android:textColor="@color/text"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_back"
+                android:tint="@color/text"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Back"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="System-wide protection"
+                android:textColor="@color/text"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
@@ -78,10 +98,45 @@
         <View android:layout_width="match_parent" android:layout_height="1dp"
             android:layout_marginTop="20dp" android:background="@color/edge" />
 
+        <TextView style="@style/OnbStep" android:text="TRAI DLT &amp; SMS Protection" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swDltProtection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="true"
+            android:text="TRAI DLT Header Verification: validate registered senders &amp; type suffixes (-T, -S, -G)"
+            android:textColor="@color/text" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swSuppressLegit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="true"
+            android:text="Silence false alarms: never flag authentic bank transactions or OTPs as fraud"
+            android:textColor="@color/text" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swNotifyPromo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="false"
+            android:text="Notify on commercial / promotional SMS (-P)"
+            android:textColor="@color/text" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="20dp" android:background="@color/edge" />
+
         <TextView style="@style/OnbStep" android:text="Test the shield" />
 
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnTestLegitSms"
+            style="@style/OnbBtn" android:text="▶ Simulate authentic bank alert (VK-HDFCBK-T)" />
+
         <com.google.android.material.button.MaterialButton android:id="@+id/btnTestSms"
-            style="@style/OnbBtn" android:text="▶ Simulate a scam SMS" />
+            style="@style/OnbBtn" android:text="▶ Simulate fake bank SMS (+91 personal number)" />
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btnTestEmail"
             style="@style/OnbBtn" android:text="▶ Simulate a phishing email" />
@@ -90,7 +145,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Runs the real detection pipeline on a sample message and posts the alert, so you can see what a caught scam looks like without waiting for a real one."
+            android:text="Runs the real detection pipeline on sample messages so you can verify that genuine DLT bank alerts stay quiet and fake numbers are flagged."
             android:textColor="@color/muted"
             android:textSize="12sp" />
     </LinearLayout>

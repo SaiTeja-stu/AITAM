@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cyber_dark_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_back"
+                app:tint="@color/text"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Back"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Email Forensics &amp; GeoLocation"
+                android:textColor="@color/text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Paste a raw .eml email (headers + body) to trace its relay path, verify SPF/DKIM/DMARC, geolocate the sender, and check it against past incidents."
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLoadSample"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/cyber_emerald"
+            android:text="Load a sample malicious email" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEml"
+            style="@style/AuthField"
+            android:hint="Paste raw .eml content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEml"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="6"
+                android:gravity="top"
+                android:typeface="monospace"
+                android:textSize="11sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAnalyze"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:backgroundTint="@color/cyber_emerald"
+            android:textColor="#04120A"
+            android:text="Run Forensic Analysis" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/resultBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_inspector_box"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginTop="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvRiskBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="monospace"
+                android:textColor="@color/text"
+                android:textIsSelectable="true"
+                android:textSize="11.5sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReportForensic"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:textColor="@color/cyber_emerald"
+                app:strokeColor="@color/cyber_dock_stroke"
+                android:text="Report to Cyber Cell (with GPS)" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownloadPdf"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/cyber_emerald"
+                app:strokeColor="@color/cyber_dock_stroke"
+                android:text="Download Evidence Certificate (PDF)" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

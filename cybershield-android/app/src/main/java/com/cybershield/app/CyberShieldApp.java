@@ -33,6 +33,7 @@ public class CyberShieldApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        com.cybershield.app.ui.Motion.install(this);
 
         // Log any uncaught crash before the system handler kills us.
         Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();

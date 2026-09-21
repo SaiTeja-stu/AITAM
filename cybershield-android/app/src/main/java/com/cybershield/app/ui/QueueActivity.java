@@ -41,6 +41,7 @@ public class QueueActivity extends AppCompatActivity {
         super.onCreate(s);
         b = ActivityQueueBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
+        b.btnBack.setOnClickListener(v -> finish());
 
         admin = getIntent().getBooleanExtra("admin", false);
         b.subtitle.setText(admin ? "Recent analyses across all users" : "Your recent checks");
@@ -125,13 +126,13 @@ public class QueueActivity extends AppCompatActivity {
     }
 
     static int color(String level) {
-        if (level == null) return Color.parseColor("#93A0BC");
+        if (level == null) return Color.parseColor("#9F9F9F");
         switch (level) {
-            case "MALICIOUS": return Color.parseColor("#F87171");
-            case "HIGH_RISK": return Color.parseColor("#FB923C");
-            case "SUSPICIOUS": return Color.parseColor("#FDE047");
-            case "SAFE": return Color.parseColor("#34D399");
-            default: return Color.parseColor("#93A0BC");
+            case "MALICIOUS": return Color.parseColor("#E5484D");
+            case "HIGH_RISK": return Color.parseColor("#F08A3C");
+            case "SUSPICIOUS": return Color.parseColor("#F5C451");
+            case "SAFE": return Color.parseColor("#1BD671");
+            default: return Color.parseColor("#9F9F9F");
         }
     }
 

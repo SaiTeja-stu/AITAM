@@ -39,6 +39,7 @@ public class ScanQrActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         b = ActivityScanQrBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
+        b.btnBack.setOnClickListener(v -> finish());
 
         analysisExecutor = Executors.newSingleThreadExecutor();
         scanner = BarcodeScanning.getClient(new BarcodeScannerOptions.Builder()

@@ -29,6 +29,9 @@ public class AuthActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         b = ActivityAuthBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
@@ -38,10 +41,23 @@ public class AuthActivity extends AppCompatActivity {
         b.btnForgot.setOnClickListener(v -> {
             if (mode == Mode.VERIFY) {
                 auth.resend(pendingEmail, cb(() -> {}));
+                startResendCooldown();
+            } else if (mode == Mode.RESET) {
+                auth.forgot(pendingEmail, cb(() -> {}));
+                startResendCooldown();
             } else {
                 setMode(Mode.FORGOT);
             }
         });
+
+        // "I agree to the Terms & Conditions" (sign-up): tap the text to read them
+        String agree = "I agree to the Terms & Conditions and Privacy Notice";
+        android.text.SpannableString link = new android.text.SpannableString(agree);
+        link.setSpan(new android.text.style.UnderlineSpan(), 15, agree.length(), 0);
+        link.setSpan(new android.text.style.ForegroundColorSpan(getColor(com.cybershield.app.R.color.cyber_emerald)),
+                15, agree.length(), 0);
+        b.tvTerms.setText(link);
+        b.tvTerms.setOnClickListener(v -> LegalText.show(this, () -> b.cbTerms.setChecked(true)));
 
         b.serverInfo.setOnClickListener(v -> editServerUrl());
         updateServerInfo();
@@ -73,6 +89,8 @@ public class AuthActivity extends AppCompatActivity {
         b.tilPassword.setVisibility(forgot || verify ? View.GONE : View.VISIBLE);
         b.tilPassword.setHint(reset ? "New password" : "Password");
         b.tilCode.setVisibility(verify || reset ? View.VISIBLE : View.GONE);
+        b.termsRow.setVisibility(signup ? View.VISIBLE : View.GONE);
+        if (signup) b.cbTerms.setChecked(false);
 
         switch (m) {
             case SIGN_IN -> set("Sign in", "Use your Secure Me account.", "Sign in", "Create an account", true);
@@ -85,7 +103,13 @@ public class AuthActivity extends AppCompatActivity {
                 b.btnForgot.setText("Resend code");
             }
             case FORGOT -> set("Reset password", "We'll email you a 6-digit reset code.", "Send code", "Back to sign in", false);
-            case RESET -> set("Set new password", "Enter the code from your email and a new password.", "Update password", "Back to sign in", false);
+            case RESET -> {
+                set("Set new password",
+                        "Enter the 6-digit code we emailed to " + pendingEmail + " and choose a new password.",
+                        "Update password", "Back to sign in", false);
+                b.btnForgot.setVisibility(View.VISIBLE);
+                b.btnForgot.setText("Resend code");
+            }
         }
     }
 
@@ -122,8 +146,12 @@ public class AuthActivity extends AppCompatActivity {
                     msg("Enter a valid email, a username (3+ chars) and a password (12+ chars).", true);
                     return;
                 }
+                if (!b.cbTerms.isChecked()) {
+                    msg("Please accept the Terms & Conditions to create your account.", true);
+                    return;
+                }
                 pendingEmail = login;
-                auth.register(login, username, username, password, cb(() -> setMode(Mode.VERIFY)));
+                auth.register(login, username, username, password, true, cb(() -> setMode(Mode.VERIFY)));
             }
 
             case VERIFY -> {
@@ -145,6 +173,26 @@ public class AuthActivity extends AppCompatActivity {
                 auth.reset(pendingEmail, code, password, cb(() -> setMode(Mode.SIGN_IN)));
             }
         }
+    }
+
+    /** Stops "Resend code" being hammered: disabled for 30 s with a countdown. */
+    private void startResendCooldown() {
+        final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+        b.btnForgot.setEnabled(false);
+        final int[] left = {30};
+        h.post(new Runnable() {
+            @Override public void run() {
+                if (mode != Mode.VERIFY && mode != Mode.RESET) return;
+                if (left[0] <= 0) {
+                    b.btnForgot.setEnabled(true);
+                    b.btnForgot.setText("Resend code");
+                    return;
+                }
+                b.btnForgot.setText("Resend code in " + left[0] + "s");
+                left[0]--;
+                h.postDelayed(this, 1000);
+            }
+        });
     }
 
     private AuthRepository.Cb cb(Runnable onOk) {

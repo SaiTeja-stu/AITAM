@@ -18,6 +18,8 @@ public class AnalyzeConsoleActivity extends AppCompatActivity {
         b = ActivityAnalyzeConsoleBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        b.btnBack.setOnClickListener(v -> finish());
+
         b.btnRun.setOnClickListener(v -> {
             String content = b.etContent.getText() == null ? "" : b.etContent.getText().toString().trim();
             if (content.isEmpty()) {

@@ -35,6 +35,8 @@ public class OnboardingActivity extends AppCompatActivity {
         b = ActivityOnboardingBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        b.btnBack.setOnClickListener(v -> finish());
+
         b.btnSms.setOnClickListener(v ->
                 smsPerms.launch(new String[]{Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS}));
 
@@ -47,11 +49,20 @@ public class OnboardingActivity extends AppCompatActivity {
         b.btnNotif.setOnClickListener(v ->
                 startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
 
+        b.btnTestLegitSms.setOnClickListener(v -> {
+            com.cybershield.app.sms.SmsReceiver.scan(getApplicationContext(), "VK-HDFCBK-T",
+                    "₹5,000.00 debited from A/C XX1234 on 08-Sep-26. UPI ref 6251049281. Avl Bal: ₹42,150.00. "
+                            + "If not done by you, immediately call 18002026161 or SMS BLOCK to 5676712.");
+            android.widget.Toast.makeText(this, "Verified TRAI DLT sender (VK-HDFCBK-T): Classified as authentic Transaction Alert. Safe!",
+                    android.widget.Toast.LENGTH_LONG).show();
+        });
+
         b.btnTestSms.setOnClickListener(v -> {
             com.cybershield.app.sms.SmsReceiver.scan(getApplicationContext(), "+919812345678",
                     "Dear customer, your SBI account KYC is pending. Verify your debit card and the OTP "
                             + "at http://sbi-kyc-verify.tk now or your account will be blocked today.");
-            android.widget.Toast.makeText(this, "Scanning… watch for the alert", android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(this, "Scanning fake number (+91…): watch for the Fraud warning",
+                    android.widget.Toast.LENGTH_SHORT).show();
         });
         b.btnTestEmail.setOnClickListener(v -> {
             String raw = "From: \"PayPal Service\" <security@paypa1-account-verify.tk>\n"
@@ -77,6 +88,15 @@ public class OnboardingActivity extends AppCompatActivity {
         });
         b.swStrict.setEnabled(shield.watchBrowsers());
         b.swStrict.setOnCheckedChangeListener((v, checked) -> shield.setStrictMode(checked));
+
+        b.swDltProtection.setChecked(shield.dltProtectionEnabled());
+        b.swDltProtection.setOnCheckedChangeListener((v, checked) -> shield.setDltProtectionEnabled(checked));
+
+        b.swSuppressLegit.setChecked(shield.suppressLegitBankAlerts());
+        b.swSuppressLegit.setOnCheckedChangeListener((v, checked) -> shield.setSuppressLegitBankAlerts(checked));
+
+        b.swNotifyPromo.setChecked(shield.notifyOnPromo());
+        b.swNotifyPromo.setOnCheckedChangeListener((v, checked) -> shield.setNotifyOnPromo(checked));
     }
 
     @Override

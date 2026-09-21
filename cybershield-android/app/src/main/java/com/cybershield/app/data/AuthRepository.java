@@ -35,12 +35,14 @@ public class AuthRepository {
         this.store = CyberShieldApp.get().api().store();
     }
 
-    public void register(String email, String username, String displayName, String password, Cb cb) {
-        Map<String, String> b = new HashMap<>();
+    public void register(String email, String username, String displayName, String password,
+                         boolean acceptTerms, Cb cb) {
+        Map<String, Object> b = new HashMap<>();
         b.put("email", email);
         b.put("username", username);
         b.put("displayName", displayName);
         b.put("password", password);
+        b.put("acceptTerms", acceptTerms);
         call(() -> CyberShieldApp.get().api().api().register(b).execute(), cb,
                 "Check your email for a 6-digit code.");
     }
@@ -116,6 +118,22 @@ public class AuthRepository {
         });
     }
 
+    /** Error responses carry {"message": ...} (ours) or {"detail": ...} (validation); show either. */
+    private static String errorText(Response<?> r) {
+        try {
+            if (r.errorBody() != null) {
+                String raw = r.errorBody().string();
+                com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(raw).getAsJsonObject();
+                String t = null;
+                if (o.has("message") && !o.get("message").isJsonNull()) t = o.get("message").getAsString();
+                else if (o.has("detail") && !o.get("detail").isJsonNull()) t = o.get("detail").getAsString();
+                if (t != null && !t.isBlank()) return t.replaceFirst("^[A-Za-z]+: ", "");
+            }
+        } catch (Exception ignored) {
+        }
+        return "That didn't work (" + r.code() + "). Please try again.";
+    }
+
     private interface ApiCall {
         Response<Map<String, String>> run() throws Exception;
     }
@@ -129,8 +147,7 @@ public class AuthRepository {
                 if (r.isSuccessful() || r.code() == 202) {
                     main.post(() -> cb.ok(msg));
                 } else {
-                    String err = r.body() != null && r.body().get("message") != null
-                            ? r.body().get("message") : "That didn't work (" + r.code() + ").";
+                    String err = errorText(r);
                     main.post(() -> cb.fail(err));
                 }
             } catch (Exception e) {

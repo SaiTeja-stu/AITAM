@@ -51,14 +51,14 @@ public class SecureStore {
     public void setRefreshToken(String t) { prefs.edit().putString(K_REFRESH, t).apply(); }
     public boolean hasRefreshToken() { return refreshToken() != null; }
 
-    /** True if the app may proceed past the auth screen — a real backend session is required. */
-    public boolean hasSession() { return hasToken() || hasRefreshToken(); }
+    /** True if the app may proceed past the auth screen — returns true for 100% offline access. */
+    public boolean hasSession() { return true; }
 
     /** Kept as an alias for call sites that distinguished account vs guest. */
-    public boolean hasAccount() { return hasSession(); }
+    public boolean hasAccount() { return hasToken() || hasRefreshToken(); }
 
-    public boolean isGuest() { return false; }
-    public void setGuest(boolean on) { /* guest mode removed */ }
+    public boolean isGuest() { return !hasAccount(); }
+    public void setGuest(boolean on) { prefs.edit().putBoolean(K_GUEST, on).apply(); }
 
     public void setTokens(String access, String refresh) {
         SharedPreferences.Editor e = prefs.edit();

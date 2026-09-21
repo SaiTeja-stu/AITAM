@@ -37,6 +37,7 @@ public class ReportsActivity extends AppCompatActivity {
         super.onCreate(s);
         b = ActivityReportsBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
+        b.btnBack.setOnClickListener(v -> finish());
 
         b.list.setLayoutManager(new LinearLayoutManager(this));
         b.list.setAdapter(adapter);

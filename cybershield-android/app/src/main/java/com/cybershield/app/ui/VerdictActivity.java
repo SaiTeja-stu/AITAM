@@ -2,18 +2,22 @@ package com.cybershield.app.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.cybershield.app.data.Repository;
 import com.cybershield.app.databinding.ActivityVerdictBinding;
 import com.cybershield.app.engine.LocalVerdict;
+import com.cybershield.app.geo.LocationHelper;
 import com.cybershield.app.net.dto.AnalyzeResponse;
+import com.cybershield.app.net.dto.IncidentReportResponse;
 
 /**
  * Shows the on-device verdict instantly, then replaces it with the authoritative
@@ -25,9 +29,13 @@ public class VerdictActivity extends AppCompatActivity {
     private static final String EX_CONTENT = "content";
     private static final String EX_SOURCE = "source";
 
+    private static final int RC_LOCATION = 4201;
+
     private ActivityVerdictBinding b;
     private SignalAdapter adapter;
     private String type, content, source;
+    private String lastRiskTier = "SUSPICIOUS";
+    private int lastRiskScore = 0;
 
     public static Intent intent(Context ctx, String type, String content, String source) {
         Intent i = new Intent(ctx, VerdictActivity.class);
@@ -61,8 +69,8 @@ public class VerdictActivity extends AppCompatActivity {
         b.btnDone.setOnClickListener(v -> finish());
         b.btnReport.setOnClickListener(v -> {
             new Repository(this).report(type, content, "reported from app");
-            Toast.makeText(this, "Reported. Thank you.", Toast.LENGTH_SHORT).show();
             b.btnReport.setEnabled(false);
+            lodgeGeoTaggedIncident();
         });
 
         new Repository(this).analyze(type, content, source, new Repository.Callback() {
@@ -75,6 +83,8 @@ public class VerdictActivity extends AppCompatActivity {
     }
 
     private void renderLocal(LocalVerdict v) {
+        lastRiskTier = v.level.name();
+        lastRiskScore = v.score;
         b.badge.setText(v.priority() + " · on-device check");
         pill(colorForLevel(v.level.name()));
         b.score.setText(String.valueOf(v.score));
@@ -90,12 +100,14 @@ public class VerdictActivity extends AppCompatActivity {
     }
 
     private void renderServer(AnalyzeResponse r) {
+        lastRiskTier = r.riskLevel;
+        lastRiskScore = r.riskScore;
         boolean noSignals = r.riskScore == 0
                 && (r.signals == null || r.signals.stream().noneMatch(s -> s.weight > 0));
         boolean unverifiedClean = "SAFE".equals(r.riskLevel) && !r.trusted && noSignals;
 
         String badgeText = unverifiedClean ? "UNVERIFIED" : r.priority + " · " + r.riskLevel.replace('_', ' ');
-        int color = unverifiedClean ? Color.parseColor("#93A0BC") : colorForLevel(r.riskLevel);
+        int color = unverifiedClean ? Color.parseColor("#9F9F9F") : colorForLevel(r.riskLevel);
         b.badge.setText(badgeText);
         pill(color);
         b.score.setText(String.valueOf(r.riskScore));
@@ -131,6 +143,55 @@ public class VerdictActivity extends AppCompatActivity {
         b.recs.setText(sb.toString().trim());
     }
 
+    /** Grabs a GPS fix (asking for permission if needed) then lodges the incident report. */
+    private void lodgeGeoTaggedIncident() {
+        if (!LocationHelper.hasPermission(this)) {
+            Toast.makeText(this, "Getting your location to route this to the right Cyber Crime station…", Toast.LENGTH_SHORT).show();
+            LocationHelper.requestPermission(this, RC_LOCATION);
+            return;
+        }
+        LocationHelper.fetchCurrentLocation(this, new LocationHelper.Callback() {
+            @Override public void onLocation(double lat, double lon, float accuracyMeters, String provider) {
+                submitIncident(lat, lon, accuracyMeters, provider);
+            }
+            @Override public void onUnavailable(String reason) {
+                submitIncident(0.0, 0.0, 0f, "UNKNOWN");
+            }
+        });
+    }
+
+    private void submitIncident(double lat, double lon, float accuracyMeters, String provider) {
+        new Repository(this).reportIncident(type, content, lastRiskTier, lastRiskScore,
+                lat, lon, accuracyMeters, provider, new Repository.IncidentCallback() {
+                    @Override public void onLodged(IncidentReportResponse resp) {
+                        new AlertDialog.Builder(VerdictActivity.this)
+                                .setTitle("Incident lodged")
+                                .setMessage("Incident ID: " + resp.incidentId
+                                        + "\nJurisdiction: " + resp.jurisdictionStation
+                                        + "\nHelpline: " + resp.helpline)
+                                .setPositiveButton("OK", null)
+                                .show();
+                    }
+                    @Override public void onFailed(String message) {
+                        Toast.makeText(VerdictActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == RC_LOCATION) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            if (granted) {
+                lodgeGeoTaggedIncident();
+            } else {
+                Toast.makeText(this, "Location permission denied — reporting without GPS tag.", Toast.LENGTH_SHORT).show();
+                submitIncident(0.0, 0.0, 0f, "UNKNOWN");
+            }
+        }
+    }
+
     private static String safe(String s) {
         return s == null ? "—" : s;
     }
@@ -146,13 +207,13 @@ public class VerdictActivity extends AppCompatActivity {
     }
 
     private int colorForLevel(String level) {
-        if (level == null) return Color.parseColor("#93A0BC");
+        if (level == null) return Color.parseColor("#9F9F9F");
         switch (level) {
-            case "MALICIOUS": return Color.parseColor("#F87171");
-            case "HIGH_RISK": return Color.parseColor("#FB923C");
-            case "SUSPICIOUS": return Color.parseColor("#FDE047");
-            case "SAFE": return Color.parseColor("#34D399");
-            default: return Color.parseColor("#93A0BC");
+            case "MALICIOUS": return Color.parseColor("#E5484D");
+            case "HIGH_RISK": return Color.parseColor("#F08A3C");
+            case "SUSPICIOUS": return Color.parseColor("#F5C451");
+            case "SAFE": return Color.parseColor("#1BD671");
+            default: return Color.parseColor("#9F9F9F");
         }
     }
 }

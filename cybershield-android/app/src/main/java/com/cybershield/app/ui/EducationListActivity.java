@@ -30,6 +30,7 @@ public class EducationListActivity extends AppCompatActivity {
         super.onCreate(s);
         b = ActivityEducationListBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
+        b.btnBack.setOnClickListener(v -> finish());
         store = CyberShieldApp.get().api().store();
 
         adapter = new EduAdapter(m -> startActivity(EduDetailActivity.intent(this, m, store.eduLang())));

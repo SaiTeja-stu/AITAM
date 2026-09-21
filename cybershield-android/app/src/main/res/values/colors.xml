@@ -1,25 +1,42 @@
 <resources>
-    <color name="ink">#0B1020</color>
-    <color name="panel">#131A2E</color>
-    <color name="edge">#243050</color>
-    <color name="text">#E7ECF5</color>
-    <color name="muted">#93A0BC</color>
-    <color name="sky">#38BDF8</color>
+    <!-- Secure Me palette: neutral black surfaces, hairline borders, one mint-green accent -->
+    <color name="cyber_dark_bg">#050505</color>
+    <color name="cyber_card_bg">#0E0E0E</color>
+    <color name="cyber_card_stroke">#1F1F1F</color>
+    <color name="cyber_dock_bg">#EB111515</color>
+    <color name="cyber_dock_stroke">#26302B</color>
 
-    <color name="risk_safe">#34D399</color>
-    <color name="risk_suspicious">#FDE047</color>
-    <color name="risk_high">#FB923C</color>
-    <color name="risk_malicious">#F87171</color>
+    <!-- Accent Tokens -->
+    <color name="cyber_emerald">#1BD671</color>
+    <color name="cyber_emerald_glow">#401BD671</color>
+    <color name="cyber_emerald_deep">#0F5A27</color>
+    <color name="cyber_crimson">#E5484D</color>
+    <color name="cyber_crimson_bg">#20E5484D</color>
+    <color name="cyber_blue">#7DD3FC</color>
 
-    <!-- glassmorphism tokens (translucent white over the app gradient) -->
-    <color name="glass">#14FFFFFF</color>
-    <color name="glass_strong">#20FFFFFF</color>
-    <color name="glass_edge">#33FFFFFF</color>
-    <color name="glass_dim">#0AFFFFFF</color>
+    <!-- Legacy / Base mappings -->
+    <color name="ink">#050505</color>
+    <color name="panel">#0E0E0E</color>
+    <color name="edge">#1F1F1F</color>
+    <color name="text">#F2F2F2</color>
+    <color name="muted">#9F9F9F</color>
+    <color name="text_dim">#666666</color>
+    <color name="sky">#1BD671</color>
 
-    <!-- background gradient stops -->
-    <color name="bg_a">#12203E</color>
-    <color name="bg_b">#0B1020</color>
-    <color name="bg_c">#090C16</color>
-    <color name="scrim">#B3070A12</color>
+    <color name="risk_safe">#1BD671</color>
+    <color name="risk_suspicious">#F5C451</color>
+    <color name="risk_high">#F08A3C</color>
+    <color name="risk_malicious">#E5484D</color>
+
+    <!-- Card / glass tokens -->
+    <color name="glass">#F20E0E0E</color>
+    <color name="glass_strong">#F20E0E0E</color>
+    <color name="glass_edge">#1F1F1F</color>
+    <color name="glass_dim">#0A0A0A</color>
+
+    <!-- Background gradient stops (black with a faint green lift at the top) -->
+    <color name="bg_a">#07100B</color>
+    <color name="bg_b">#030504</color>
+    <color name="bg_c">#000000</color>
+    <color name="scrim">#CC000000</color>
 </resources>

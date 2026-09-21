@@ -59,11 +59,11 @@ public class SignalAdapter extends RecyclerView.Adapter<SignalAdapter.VH> {
     private int colorFor(String sev) {
         if (sev == null) return Color.GRAY;
         switch (sev) {
-            case "CRITICAL": return Color.parseColor("#F87171");
-            case "HIGH": return Color.parseColor("#FB923C");
-            case "MEDIUM": return Color.parseColor("#FDE047");
-            case "TRUST": return Color.parseColor("#34D399");
-            default: return Color.parseColor("#93A0BC");
+            case "CRITICAL": return Color.parseColor("#E5484D");
+            case "HIGH": return Color.parseColor("#F08A3C");
+            case "MEDIUM": return Color.parseColor("#F5C451");
+            case "TRUST": return Color.parseColor("#1BD671");
+            default: return Color.parseColor("#9F9F9F");
         }
     }
 

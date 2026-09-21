@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D9060912">
+    android:background="#D9000000">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -45,7 +45,7 @@
                 android:layout_marginTop="12dp"
                 android:lineSpacingExtra="3dp"
                 android:text=""
-                android:textColor="#DCE4F1"
+                android:textColor="#E6E6E6"
                 android:textSize="15sp" />
 
             <Button
@@ -53,9 +53,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
-                android:backgroundTint="#F87171"
+                android:backgroundTint="#E5484D"
                 android:text="Go back — stay safe"
-                android:textColor="#0B1020"
+                android:textColor="#0A0A0A"
                 android:textStyle="bold" />
 
             <Button
@@ -65,7 +65,7 @@
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/glass_dim"
                 android:text="I understand the risk, continue"
-                android:textColor="#DCE4F1" />
+                android:textColor="#E6E6E6" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </FrameLayout>
