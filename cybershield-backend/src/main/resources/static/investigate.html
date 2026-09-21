@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Secure Me — Investigator Console</title>
+<style>
+  :root {
+    --bg-a:#12203E; --bg-b:#0B1020; --bg-c:#090C16;
+    --glass:rgba(255,255,255,0.08); --glass-edge:rgba(255,255,255,0.14);
+    --text:#EAF2FF; --muted:#93A3C4; --sky:#38BDF8; --cyan:#22D3EE; --blue:#3B82F6;
+    --safe:#34D399; --warn:#FDE047; --high:#FB923C; --bad:#F87171;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(59,130,246,0.25), transparent 40%),
+      linear-gradient(135deg, var(--bg-a), var(--bg-b) 55%, var(--bg-c));
+    background-attachment:fixed;
+  }
+  .wrap { max-width:920px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 28px; }
+  .card {
+    background:var(--glass); border:1px solid var(--glass-edge); border-radius:16px;
+    padding:22px; margin-bottom:20px; backdrop-filter: blur(6px);
+  }
+  label { display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+  input, select {
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--glass-edge);
+    background:rgba(255,255,255,0.05); color:var(--text); font-size:14px; margin-bottom:14px;
+  }
+  input:focus, select:focus { outline:2px solid var(--sky); }
+  button {
+    background:linear-gradient(90deg, var(--cyan), var(--blue)); color:#04101F; border:none;
+    font-weight:700; padding:12px 18px; border-radius:10px; cursor:pointer; font-size:14px;
+  }
+  button.secondary { background:transparent; color:var(--text); border:1px solid var(--glass-edge); font-weight:500; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:160px; }
+  .msg { font-size:13px; padding:10px 12px; border-radius:8px; margin-bottom:14px; }
+  .msg.err { background:rgba(248,113,113,0.12); color:var(--bad); border:1px solid rgba(248,113,113,0.3); }
+  .msg.ok { background:rgba(52,211,153,0.12); color:var(--safe); border:1px solid rgba(52,211,153,0.3); }
+  .hidden { display:none; }
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:8px; }
+  .stat { background:rgba(255,255,255,0.05); border:1px solid var(--glass-edge); border-radius:12px; padding:14px; }
+  .stat .n { font-size:26px; font-weight:800; }
+  .stat .l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+  .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; margin:2px 4px 2px 0; }
+  .b-safe{background:rgba(52,211,153,.15);color:var(--safe);} .b-susp{background:rgba(253,224,71,.15);color:var(--warn);}
+  .b-high{background:rgba(251,146,60,.15);color:var(--high);} .b-bad{background:rgba(248,113,113,.15);color:var(--bad);}
+  .b-neutral{background:rgba(255,255,255,.08);color:var(--muted);}
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .who { font-size:12px; color:var(--muted); }
+  a.link { color:var(--sky); cursor:pointer; text-decoration:none; font-size:13px; }
+  .foot { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>🛡️ Secure Me — Investigator Console</h1>
+      <p class="sub">Cyber-cell correlation search. Every lookup here is written to an audit log.</p>
+    </div>
+    <div id="whoBox" class="who hidden">Signed in as <b id="whoName"></b> · <a class="link" id="logoutLink">sign out</a></div>
+  </div>
+
+  <div id="loginCard" class="card">
+    <div id="loginMsg"></div>
+    <label>Server URL</label>
+    <input id="baseUrl" value="http://localhost:8899" />
+    <label>Investigator username or email</label>
+    <input id="loginUser" autocomplete="username" />
+    <label>Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password" />
+    <button id="loginBtn">Sign in</button>
+    <div class="foot">Accounts are provisioned by an admin (Admin → Investigators). You'll receive a one-time temporary password out of band.</div>
+  </div>
+
+  <div id="searchCard" class="card hidden">
+    <div id="searchMsg"></div>
+    <div class="row">
+      <div>
+        <label>Indicator type</label>
+        <select id="indType">
+          <option value="DOMAIN">Website domain</option>
+          <option value="URL">Full URL (we'll extract the domain)</option>
+          <option value="VPA">UPI VPA (payment ID)</option>
+          <option value="PHONE">Phone number</option>
+        </select>
+      </div>
+      <div style="flex:2">
+        <label>Value to search</label>
+        <input id="indValue" placeholder="e.g. sbi-kyc-verify.tk or +91XXXXXXXXXX" />
+      </div>
+    </div>
+    <button id="searchBtn">Search</button>
+    <button class="secondary" id="historyBtn" style="margin-left:8px;">My recent searches</button>
+  </div>
+
+  <div id="resultCard" class="card hidden"></div>
+  <div id="historyCard" class="card hidden"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+function baseUrl() { return $('baseUrl').value.replace(/\/$/, ''); }
+function token() { return localStorage.getItem('cs_investigator_token') || ''; }
+function setToken(t) { localStorage.setItem('cs_investigator_token', t); }
+function clearToken() { localStorage.removeItem('cs_investigator_token'); }
+
+function msg(el, text, kind) {
+  el.innerHTML = text ? `<div class="msg ${kind}">${text}</div>` : '';
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(baseUrl() + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}),
+      ...(token() ? { Authorization: 'Bearer ' + token() } : {}) },
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error((data && (data.detail || data.message)) || res.statusText);
+  return data;
+}
+
+function showApp(username) {
+  $('loginCard').classList.add('hidden');
+  $('searchCard').classList.remove('hidden');
+  $('whoBox').classList.remove('hidden');
+  $('whoName').textContent = username;
+}
+
+$('loginBtn').onclick = async () => {
+  msg($('loginMsg'), '', '');
+  try {
+    const data = await api('/auth/login', { method: 'POST',
+      body: JSON.stringify({ login: $('loginUser').value.trim(), password: $('loginPass').value }) });
+    setToken(data.accessToken);
+    const me = await api('/auth/me');
+    if (!me.investigator) {
+      clearToken();
+      msg($('loginMsg'), 'This account does not have investigator access.', 'err');
+      return;
+    }
+    showApp(me.username);
+  } catch (e) {
+    msg($('loginMsg'), e.message || 'Sign-in failed.', 'err');
+  }
+};
+
+$('logoutLink').onclick = () => { clearToken(); location.reload(); };
+
+$('searchBtn').onclick = async () => {
+  msg($('searchMsg'), '', '');
+  $('historyCard').classList.add('hidden');
+  const type = $('indType').value, value = $('indValue').value.trim();
+  if (!value) { msg($('searchMsg'), 'Enter a value to search.', 'err'); return; }
+  try {
+    const r = await api(`/api/v1/investigate/search?type=${type}&value=${encodeURIComponent(value)}`);
+    renderResult(r);
+  } catch (e) {
+    msg($('searchMsg'), e.message || 'Search failed.', 'err');
+    $('resultCard').classList.add('hidden');
+  }
+};
+
+$('historyBtn').onclick = async () => {
+  try {
+    const r = await api('/api/v1/investigate/history');
+    renderHistory(r.items || []);
+  } catch (e) { msg($('searchMsg'), e.message, 'err'); }
+};
+
+function badge(cls, text) { return `<span class="badge ${cls}">${text}</span>`; }
+function riskBadge(level, count) {
+  const cls = { SAFE:'b-safe', SUSPICIOUS:'b-susp', HIGH_RISK:'b-high', MALICIOUS:'b-bad' }[level] || 'b-neutral';
+  return badge(cls, `${level.replace('_',' ')}: ${count}`);
+}
+function fmt(d) { return d ? new Date(d).toLocaleString() : '—'; }
+
+function renderResult(r) {
+  const risk = Object.entries(r.riskLevelBreakdown || {}).map(([k,v]) => riskBadge(k, v)).join(' ') || '<span class="foot">No passive scan hits.</span>';
+  const status = Object.entries(r.reportStatusBreakdown || {}).map(([k,v]) => badge('b-neutral', `${k}: ${v}`)).join(' ') || '<span class="foot">No manual reports filed.</span>';
+  $('resultCard').innerHTML = `
+    <h3 style="margin-top:0;">Results for ${r.indicatorType}: <code>${r.indicatorValueDisplay}</code></h3>
+    <div class="stat-grid">
+      <div class="stat"><div class="n">${r.victimCount}</div><div class="l">Distinct victims</div></div>
+      <div class="stat"><div class="n">${r.totalHits}</div><div class="l">Total hits</div></div>
+      <div class="stat"><div class="n">${r.confirmedReportCount}</div><div class="l">Confirmed reports</div></div>
+    </div>
+    <p class="foot" style="margin-top:16px;">First seen: <b>${fmt(r.firstSeen)}</b> &nbsp;·&nbsp; Last seen: <b>${fmt(r.lastSeen)}</b></p>
+    <p><b>Risk pattern:</b><br/>${risk}</p>
+    <p><b>Report status:</b><br/>${status}</p>
+    <p class="foot">Victim identities are never shown here — only aggregate counts. This search has been logged.</p>
+  `;
+  $('resultCard').classList.remove('hidden');
+}
+
+function renderHistory(items) {
+  if (!items.length) {
+    $('historyCard').innerHTML = '<p class="foot">No searches yet.</p>';
+  } else {
+    $('historyCard').innerHTML = '<h3 style="margin-top:0;">My recent searches</h3>' + items.map(i =>
+      `<div class="foot">${fmt(i.searchedAt)} — <b>${i.indicatorType}</b> <code>${i.indicatorValue}</code> → ${i.resultCount} hits</div>`
+    ).join('');
+  }
+  $('historyCard').classList.remove('hidden');
+}
+
+// Resume session if a token is already stored.
+(async () => {
+  if (!token()) return;
+  try {
+    const me = await api('/auth/me');
+    if (me.investigator) showApp(me.username); else clearToken();
+  } catch { clearToken(); }
+})();
+</script>
+</body>
+</html>

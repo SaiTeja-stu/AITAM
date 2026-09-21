@@ -61,6 +61,9 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    mail:
+      enabled: false
 
 springdoc:
   swagger-ui:
@@ -74,19 +77,19 @@ logging:
 
 cybershield:
   jwt:
-    secret: ${CYBERSHIELD_JWT_SECRET:}        # >=32 chars in production
+    secret: ${CYBERSHIELD_JWT_SECRET:dev-jwt-secret-change-me-at-least-32-characters}        # >=32 chars in production
     ttl-seconds: 900
   hmac-secret: ${CYBERSHIELD_HMAC_SECRET:dev-only-insecure-salt-change-me}
   app-name: Secure Me
   admin:
-    username: ${CYBERSHIELD_ADMIN_USER:}
-    password: ${CYBERSHIELD_ADMIN_PASSWORD:}
-    email: ${CYBERSHIELD_ADMIN_EMAIL:}
+    username: ${CYBERSHIELD_ADMIN_USER:admin}
+    password: ${CYBERSHIELD_ADMIN_PASSWORD:admin-password-123456}
+    email: ${CYBERSHIELD_ADMIN_EMAIL:admin@cybershield.local}
   auth:
     max-attempts: 5
     window-minutes: 15
     lock-minutes: 15
-    require-email-verification: ${CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION:true}
+    require-email-verification: ${CYBERSHIELD_REQUIRE_EMAIL_VERIFICATION:false}
     unverified-grace-hours: 48
     reset-url: ${CYBERSHIELD_RESET_URL:}     # Android deep link: cybershield://reset
     cleanup-cron: "0 15 * * * *"

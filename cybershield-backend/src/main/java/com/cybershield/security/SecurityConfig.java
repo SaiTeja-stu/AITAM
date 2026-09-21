@@ -58,20 +58,24 @@ public class SecurityConfig {
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
                 .addHeaderWriter((req, res) -> {
                     res.setHeader("X-Content-Type-Options", "nosniff");
-                    res.setHeader("Permissions-Policy", "geolocation=(), camera=(), microphone=()");
                     res.setHeader("Cache-Control", "no-store");
                 }))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/me").authenticated()
+                .requestMatchers("/api/v1/investigate/**").hasRole("INVESTIGATOR")
+                .requestMatchers("/api/v1/admin/investigators/**").hasRole("ADMIN")
                 .requestMatchers("/auth/**",
                                  "/api/v1/education/**",
+                                 "/api/v1/forensics/**",
                                  "/actuator/health",
                                  "/v3/api-docs/**",
                                  "/swagger-ui/**",
                                  "/swagger-ui.html").permitAll()
-                // Static dashboard SPA (its API calls still carry a JWT)
+                // Static dashboard & forensic console
                 .requestMatchers(HttpMethod.GET,
                                  "/", "/index.html", "/favicon.ico", "/favicon.svg",
-                                 "/assets/**", "/dashboard/**", "/vite.svg").permitAll()
+                                 "/assets/**", "/dashboard/**", "/vite.svg",
+                                 "/investigate.html", "/forensics.html").permitAll()
                 .requestMatchers("/api/v1/admin/**", "/api/v1/stats/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/**").authenticated()
                 .requestMatchers("/api/analyze-url", "/api/url-scans", "/api/analyze-email").authenticated()

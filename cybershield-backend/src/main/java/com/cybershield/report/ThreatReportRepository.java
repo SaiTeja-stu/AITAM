@@ -20,4 +20,7 @@ public interface ThreatReportRepository extends JpaRepository<ThreatReport, Stri
     List<ThreatReport> findConfirmedIndicators();
 
     long countByStatus(ThreatReport.Status status);
+
+    List<ThreatReport> findByIndicatorTypeAndIndicatorValue(
+            com.cybershield.intel.IndicatorType indicatorType, String indicatorValue);
 }

@@ -17,10 +17,15 @@ function Load-DotEnv($path) {
     }
 }
 
-if (Test-Path "C:\Program Files\Java\jdk-21") {
+if (Test-Path "C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot") {
+    $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot"
+    $env:Path = "$env:JAVA_HOME\bin;$env:Path"
+} elseif (Test-Path "C:\Program Files\Java\jdk-21") {
     $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
     $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 }
+
+Load-DotEnv (Join-Path $PSScriptRoot ".env")
 
 # Fill any missing values with dev defaults
 if (-not $env:CYBERSHIELD_JWT_SECRET)    { $env:CYBERSHIELD_JWT_SECRET    = "dev-jwt-secret-change-me-at-least-32-characters" }

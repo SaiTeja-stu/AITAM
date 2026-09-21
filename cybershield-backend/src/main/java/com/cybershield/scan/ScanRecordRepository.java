@@ -26,4 +26,13 @@ public interface ScanRecordRepository extends JpaRepository<ScanRecord, String> 
     List<Object[]> countByType();
 
     long countByCreatedAtAfter(Instant since);
+
+    /**
+     * Corroboration lookup for the investigator console: any hot-tier scan whose
+     * redacted snippet mentions the suspect indicator (a domain, a masked phone
+     * fragment...). Snippets are already redacted at write time, so this never
+     * surfaces raw victim content beyond what an admin can already see.
+     */
+    @Query("select r from ScanRecord r where lower(r.snippet) like lower(concat('%', :needle, '%'))")
+    List<ScanRecord> searchBySnippetContains(@org.springframework.data.repository.query.Param("needle") String needle);
 }

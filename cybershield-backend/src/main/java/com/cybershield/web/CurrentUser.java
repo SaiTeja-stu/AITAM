@@ -9,10 +9,13 @@ public final class CurrentUser {
     private CurrentUser() {}
 
     public static String id() {
+        JwtService.AuthenticatedUser u = principal();
+        return u == null ? null : u.userId();
+    }
+
+    /** The full JWT principal (id, username, role), or null if unauthenticated. */
+    public static JwtService.AuthenticatedUser principal() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
-        if (a != null && a.getPrincipal() instanceof JwtService.AuthenticatedUser u) {
-            return u.userId();
-        }
-        return null;
+        return (a != null && a.getPrincipal() instanceof JwtService.AuthenticatedUser u) ? u : null;
     }
 }

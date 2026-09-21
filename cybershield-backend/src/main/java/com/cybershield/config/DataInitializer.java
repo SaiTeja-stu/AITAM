@@ -46,6 +46,11 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
         if (users.existsByUsername(adminUser)) {
+            users.findByUsername(adminUser).ifPresent(existing -> {
+                existing.setPasswordHash(encoder.encode(adminPassword));
+                existing.setEmailVerified(true);
+                users.save(existing);
+            });
             return;
         }
         UserAccount u = new UserAccount();
