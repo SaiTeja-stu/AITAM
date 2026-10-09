@@ -248,8 +248,37 @@ public class EmailForensicsService {
 
     // --- Relay Hop Parsing ---
 
-    private static final Pattern IP_PATTERN = Pattern.compile("(?:\\[|\\()(\\d{1,3}(?:\\.\\d{1,3}){3})(?:\\]|\\))");
+    private static final Pattern IP_IN_DELIMITERS = Pattern.compile("(?:\\[|\\()\\s*(?:IPv6:)?([a-fA-F0-9:.]+)\\s*(?:\\]|\\))");
+    private static final Pattern BARE_IPV4 = Pattern.compile("\\b(\\d{1,3}(?:\\.\\d{1,3}){3})\\b");
     private static final Pattern FROM_HOST_PATTERN = Pattern.compile("(?i)from\\s+([a-zA-Z0-9.-]+)");
+
+    private String extractHopIp(String raw) {
+        if (raw == null) return "";
+        Matcher mDelim = IP_IN_DELIMITERS.matcher(raw);
+        while (mDelim.find()) {
+            String candidate = mDelim.group(1).trim();
+            if (isValidIp(candidate)) {
+                return candidate;
+            }
+        }
+        Matcher mBare = BARE_IPV4.matcher(raw);
+        while (mBare.find()) {
+            String candidate = mBare.group(1).trim();
+            if (isValidIp(candidate)) {
+                return candidate;
+            }
+        }
+        return "";
+    }
+
+    private boolean isValidIp(String ip) {
+        try {
+            java.net.InetAddress addr = java.net.InetAddress.getByName(ip);
+            return addr instanceof java.net.Inet4Address || addr instanceof java.net.Inet6Address;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     private List<RelayHop> reconstructRelayPath(List<String> receivedHeaders) {
         List<RelayHop> hops = new ArrayList<>();
@@ -266,12 +295,7 @@ public class EmailForensicsService {
 
         for (int i = 0; i < chronological.size(); i++) {
             String raw = chronological.get(i);
-            Matcher ipMatcher = IP_PATTERN.matcher(raw);
-
-            String ip = "";
-            if (ipMatcher.find()) {
-                ip = ipMatcher.group(1);
-            }
+            String ip = extractHopIp(raw);
 
             Matcher hostMatcher = FROM_HOST_PATTERN.matcher(raw);
             String host = hostMatcher.find() ? hostMatcher.group(1) : "unknown-mta";

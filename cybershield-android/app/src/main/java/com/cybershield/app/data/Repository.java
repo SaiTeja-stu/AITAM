@@ -106,8 +106,8 @@ public class Repository {
      * on the GPS coordinates captured via {@link com.cybershield.app.geo.LocationHelper}.
      * Pass (0,0) for lat/lon when a GPS fix could not be obtained.
      */
-    public void reportIncident(String type, String content, String riskTier, int riskScore,
-                                double userLat, double userLon, float accuracyMeters,
+    public void reportIncident(String type, String content, String riskTier, Integer riskScore,
+                                Double userLat, Double userLon, Float accuracyMeters,
                                 String networkProvider, IncidentCallback cb) {
         io.execute(() -> {
             try {

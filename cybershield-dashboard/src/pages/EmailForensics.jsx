@@ -4,6 +4,9 @@ import { api } from '../api.js';
 import { Card, RiskBadge, ScoreRing, Spinner } from '../components/ui.jsx';
 import SpecularButton from '../components/SpecularButton.jsx';
 
+const AUTH_WHAT = { SPF: 'Sent from an approved server', DKIM: 'Signature not tampered with', DMARC: "Passes the domain's own policy" };
+const STATUS_WORD = { PASS: 'Passed', FAIL: 'Failed', SOFTFAIL: 'Weak pass', NONE: 'Not set up', UNKNOWN: 'Unknown' };
+
 const AUTH_TONE = {
   PASS: { cls: 'border-cyber-emerald/40 bg-cyber-emerald/10 text-cyber-emerald', Icon: ShieldCheck },
   FAIL: { cls: 'border-cyber-rose/40 bg-cyber-rose/10 text-cyber-rose', Icon: ShieldX },
@@ -15,15 +18,15 @@ const AUTH_TONE = {
 function Fact({ label, value, mono }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</dt>
-      <dd className={`truncate text-xs text-slate-200 ${mono ? 'font-mono' : ''}`} title={value || ''}>{value || '—'}</dd>
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className={`truncate text-sm text-slate-200 ${mono ? 'font-mono' : ''}`} title={value || ''}>{value || '—'}</dd>
     </div>
   );
 }
 
 function Flag({ children, tone = 'amber' }) {
   const cls = tone === 'rose' ? 'border-cyber-rose/40 text-cyber-rose bg-cyber-rose/10' : 'border-cyber-amber/40 text-cyber-amber bg-cyber-amber/10';
-  return <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold ${cls}`}>{children}</span>;
+  return <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cls}`}>{children}</span>;
 }
 
 export default function EmailForensics() {
@@ -47,7 +50,7 @@ export default function EmailForensics() {
     try {
       setRes(await api.forensicsAnalyze(raw));
     } catch (e) {
-      setErr(e.message || 'Analysis failed');
+      setErr(e.message || "We couldn't check this email. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -67,7 +70,7 @@ export default function EmailForensics() {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch (e) {
-      setErr(e.message || 'Could not create the PDF');
+      setErr(e.message || "We couldn't create the PDF. Please try again.");
     } finally {
       setPdfBusy(false);
     }
@@ -79,7 +82,7 @@ export default function EmailForensics() {
       setRaw(s.content);
       setRes(null);
     } catch {
-      setErr('Could not load the sample');
+      setErr("We couldn't load that example.");
     }
   }
 
@@ -99,10 +102,10 @@ export default function EmailForensics() {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white">
-          <Mail className="h-6 w-6 text-cyber-accent" /> E-mail Forensics
+          <Mail className="h-6 w-6 text-cyber-accent" /> Check an email
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
-          Paste a raw e-mail or upload an .eml: headers, SPF / DKIM / DMARC, relay path with geolocation, business-e-mail-compromise cues and a court-ready report.
+        <p className="mt-1 text-sm text-slate-400">
+          Paste a suspicious email or upload its .eml file. We'll check who really sent it, where it came from and whether it looks like a scam, and you can save an evidence report for the police.
         </p>
       </div>
 
@@ -111,10 +114,10 @@ export default function EmailForensics() {
         <div className="space-y-4 lg:col-span-5">
           <div className="glass-card space-y-4 rounded-2xl p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Raw e-mail (.eml)</span>
+              <span className="text-sm font-semibold text-slate-300">The email, with its full details</span>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => fileRef.current?.click()} className="flex items-center gap-1 text-[11px] text-slate-400 transition-colors hover:text-cyber-accent">
-                  <Upload className="h-3 w-3" /> Upload .eml
+                  <Upload className="h-3 w-3" /> Upload file
                 </button>
                 <button type="button" onClick={() => { setRaw(''); setRes(null); setErr(''); }} className="flex items-center gap-1 text-[11px] text-slate-400 transition-colors hover:text-red-400">
                   <Trash2 className="h-3 w-3" /> Clear
@@ -125,7 +128,7 @@ export default function EmailForensics() {
 
             {samples.length > 0 && (
               <div>
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Bundled test cases</div>
+                <div className="mb-1.5 text-xs font-medium text-slate-500">Try an example</div>
                 <div className="flex flex-wrap gap-1.5">
                   {samples.map((s) => (
                     <button
@@ -149,7 +152,7 @@ export default function EmailForensics() {
               rows={14}
               spellCheck={false}
               className="w-full rounded-xl border border-cyber-border bg-cyber-dark p-3.5 font-mono text-[11px] leading-relaxed text-slate-200 placeholder-slate-600 outline-none focus:border-cyber-accent focus:ring-1 focus:ring-cyber-accent"
-              placeholder={'From: "Name" <sender@example.com>\nReceived: from ... by ...\nSubject: ...\n\nBody...'}
+              placeholder={'Paste the whole email here.\n\nIn Gmail: open the email → ⋮ → Show original → Copy to clipboard.\nIn Outlook: ⋯ → View → View message source.'}
             />
 
             <SpecularButton
@@ -162,7 +165,7 @@ export default function EmailForensics() {
               className="w-full font-bold shadow-cyber-glow"
             >
               {busy ? <Spinner className="h-4 w-4 text-cyan-400" /> : <Play className="h-4 w-4 fill-cyan-400 text-cyan-400" />}
-              <span className="text-white">{busy ? 'Tracing headers…' : 'Analyze e-mail'}</span>
+              <span>{busy ? 'Checking…' : 'Check this email'}</span>
             </SpecularButton>
 
             {err && (
@@ -179,8 +182,8 @@ export default function EmailForensics() {
           {!res && !busy && (
             <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-2xl border border-cyber-border bg-cyber-panel/40 p-8 text-center text-slate-500">
               <Route className="h-10 w-10 text-cyber-accent/40" />
-              <h3 className="text-base font-bold text-slate-300">Forensic workbench ready</h3>
-              <p className="max-w-md text-xs">Load a bundled case or paste a raw e-mail, then run the analysis to see the verdict, sender authentication, relay trace and the evidence report.</p>
+              <h3 className="text-base font-bold text-slate-300">Your result will appear here</h3>
+              <p className="max-w-md text-sm">Pick an example or paste an email, then press Check this email. You'll see whether it's a scam, whether the sender is genuine and where it really came from.</p>
             </div>
           )}
 
@@ -192,12 +195,12 @@ export default function EmailForensics() {
                 <div className="flex-1 space-y-2 text-center sm:text-left">
                   <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
                     <RiskBadge level={res.riskTier} />
-                    <span className="font-mono text-xs font-semibold text-slate-300">Forensic Risk Index {res.overallRiskScore}/100</span>
+                    <span className="text-sm font-medium text-slate-300">Risk score {res.overallRiskScore} out of 100</span>
                   </div>
-                  <div className="flex flex-wrap items-center justify-center gap-3 font-mono text-xs text-slate-400 sm:justify-start">
-                    <span>BEC score: <strong className="text-white">{res.becScore}</strong></span>
-                    <span>VIP impersonation: <strong className={res.isVipImpersonation ? 'text-cyber-rose' : 'text-slate-300'}>{res.isVipImpersonation ? 'yes' : 'no'}</strong></span>
-                    <span>Financial coercion: <strong className={res.hasFinancialCoercion ? 'text-cyber-rose' : 'text-slate-300'}>{res.hasFinancialCoercion ? 'yes' : 'no'}</strong></span>
+                  <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-slate-400 sm:justify-start">
+                    <span>Fake-business-email score: <strong className="text-white">{res.becScore}</strong></span>
+                    <span>Pretends to be a boss or official: <strong className={res.isVipImpersonation ? 'text-cyber-rose' : 'text-slate-300'}>{res.isVipImpersonation ? 'Yes' : 'No'}</strong></span>
+                    <span>Pressures you to pay: <strong className={res.hasFinancialCoercion ? 'text-cyber-rose' : 'text-slate-300'}>{res.hasFinancialCoercion ? 'Yes' : 'No'}</strong></span>
                   </div>
                 </div>
                 <button
@@ -207,27 +210,27 @@ export default function EmailForensics() {
                   className="flex shrink-0 items-center gap-2 rounded-xl border border-cyber-accent/40 bg-cyber-accent/10 px-4 py-2.5 text-xs font-bold text-cyber-accent transition-all hover:bg-cyber-accent/20 disabled:opacity-50"
                 >
                   {pdfBusy ? <Spinner className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                  Forensic PDF report
+                  Save evidence report (PDF)
                 </button>
               </div>
 
               {/* identity */}
-              <Card title="Message identity" icon={Fingerprint}>
+              <Card title="Who sent it" icon={Fingerprint}>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  <Fact label="Declared sender" value={`${res.fromDisplay || ''} <${res.fromAddress || ''}>`} />
-                  <Fact label="Sender domain" value={res.fromDomain} />
-                  <Fact label="Reply-To" value={res.replyTo} />
-                  <Fact label="Return-Path" value={res.returnPath} />
+                  <Fact label="Says it's from" value={`${res.fromDisplay || ''} <${res.fromAddress || ''}>`} />
+                  <Fact label="Sender's domain" value={res.fromDomain} />
+                  <Fact label="Replies go to" value={res.replyTo} />
+                  <Fact label="Bounces go to" value={res.returnPath} />
                   <Fact label="Subject" value={res.subject} />
                   <Fact label="Message-ID" value={res.messageId} mono />
                   <div className="col-span-2">
-                    <Fact label="Evidence fingerprint (SHA-256)" value={res.evidenceSha256} mono />
+                    <Fact label="Evidence fingerprint (SHA-256, proves the email wasn't changed)" value={res.evidenceSha256} mono />
                   </div>
                 </dl>
               </Card>
 
               {/* authentication */}
-              <Card title="Sender authentication" icon={ShieldCheck}>
+              <Card title="Is the sender genuine?" icon={ShieldCheck}>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {['SPF', 'DKIM', 'DMARC'].map((k) => {
                     const a = res.authMatrix?.[k] || res.authMatrix?.[k.toLowerCase()];
@@ -237,10 +240,11 @@ export default function EmailForensics() {
                     return (
                       <div key={k} data-auth={k} className={`rounded-xl border p-3 ${tone.cls}`}>
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-sm font-bold">{k}</span>
+                          <span className="text-sm font-bold">{k}</span>
                           <T className="h-4 w-4" />
                         </div>
-                        <div className="mt-1 text-xs font-bold">{st}</div>
+                        <div className="mt-1 text-sm font-bold">{STATUS_WORD[st] || st}</div>
+                        <div className="text-xs text-slate-400">{AUTH_WHAT[k]}</div>
                         <div className="mt-1 line-clamp-3 text-[11px] leading-snug text-slate-300/80">{a?.details || '—'}</div>
                       </div>
                     );
@@ -249,20 +253,22 @@ export default function EmailForensics() {
               </Card>
 
               {/* relay trace */}
-              <Card title={`Relay path and origin (${res.relayHops?.length || 0} hops)`} icon={MapPin}>
+              {/* relay trace */}
+              <Card title={`Where it travelled (${res.relayHops?.length || 0} stops)`} icon={MapPin}>
                 {origin && (
-                  <div className="mb-4 rounded-xl border border-cyber-rose/30 bg-cyber-rose/5 p-3.5 text-xs text-slate-200">
-                    <span className="font-bold text-cyber-rose">Likely origin: </span>
-                    {origin.ip} · {originGeo?.city || 'Unknown city'}, {originGeo?.country || 'Unknown country'}
+                  <div className="mb-4 rounded-xl border border-cyber-rose/30 bg-cyber-rose/5 p-3.5 text-sm text-slate-200">
+                    <span className="font-bold text-cyber-rose">Earliest reconstructed relay IP: </span>
+                    {origin.ip} · {originGeo?.latitude != null ? `${originGeo.city || 'Unknown city'}, ${originGeo.country || 'Unknown country'}` : 'Location unavailable'}
                     {originGeo?.isp ? ` · ${originGeo.isp}` : ''}{originGeo?.asn ? ` (${originGeo.asn})` : ''}
-                    <div className="mt-1 text-[11px] text-slate-400">An investigative lead from the earliest public hop, not proof of identity.</div>
+                    {originGeo?.lookupStatus === 'DEMO_FIXTURE' && <span className="ml-2 text-xs text-amber-400 font-semibold">[Demo sample fixture]</span>}
+                    <div className="mt-1 text-xs text-slate-400">An investigative network lead. Relay headers outside the recipient boundary can be forged and do not establish the sender's physical identity or location.</div>
                   </div>
                 )}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-cyber-border/60 text-[10px] uppercase tracking-wider text-slate-500">
-                        <th className="py-2 pr-3">Hop</th><th className="pr-3">IP address</th><th className="pr-3">Location</th><th className="pr-3">Network</th><th>Flags</th>
+                      <tr className="border-b border-cyber-border/60 text-xs text-slate-500">
+                        <th className="py-2 pr-3">Stop</th><th className="pr-3">IP address</th><th className="pr-3">Location</th><th className="pr-3">Network</th><th>Notes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -270,14 +276,23 @@ export default function EmailForensics() {
                         <tr key={h.hopNumber} className="border-b border-cyber-border/30 align-top">
                           <td className="py-2 pr-3 font-mono text-slate-300">{h.hopNumber}</td>
                           <td className="pr-3 font-mono text-slate-200">{h.ip || '—'}</td>
-                          <td className="pr-3 text-slate-200">{h.geo?.isPrivate ? 'Private network' : [h.geo?.city, h.geo?.country].filter(Boolean).join(', ') || '—'}</td>
+                          <td className="pr-3 text-slate-200">
+                            {h.geo?.isPrivate
+                              ? 'Private network (RFC 1918 / LAN)'
+                              : h.geo?.lookupStatus === 'DEMO_FIXTURE'
+                              ? `${h.geo?.city}, ${h.geo?.country} (Demo fixture)`
+                              : h.geo?.latitude == null
+                              ? 'Location unavailable'
+                              : [h.geo?.city, h.geo?.country].filter(Boolean).join(', ') || 'Location unavailable'}
+                          </td>
                           <td className="pr-3 text-slate-400">{[h.geo?.asn, h.geo?.isp].filter(Boolean).join(' ') || '—'}</td>
                           <td>
                             <div className="flex flex-wrap gap-1">
-                              {h.isOriginating && <Flag tone="rose">ORIGIN</Flag>}
-                              {h.geo?.isTorOrProxy && <Flag tone="rose">TOR / PROXY</Flag>}
-                              {h.geo?.isDatacenter && <Flag>DATACENTER</Flag>}
-                              {h.isSuspicious && !h.geo?.isTorOrProxy && <Flag>SUSPICIOUS</Flag>}
+                              {h.isOriginating && <Flag tone="rose">Earliest relay</Flag>}
+                              {h.geo?.lookupStatus === 'DEMO_FIXTURE' && <Flag tone="amber">Demo fixture</Flag>}
+                              {h.geo?.isTorOrProxy && <Flag tone="rose">Tor / proxy</Flag>}
+                              {h.geo?.isDatacenter && <Flag>Data centre</Flag>}
+                              {h.isSuspicious && !h.geo?.isTorOrProxy && <Flag>Suspicious</Flag>}
                             </div>
                           </td>
                         </tr>
@@ -288,26 +303,26 @@ export default function EmailForensics() {
               </Card>
 
               {/* reasons */}
-              <Card title="Risk indicators" icon={AlertOctagon}>
-                <ul className="space-y-2 text-xs text-slate-300">
+              <Card title="Warning signs" icon={AlertOctagon}>
+                <ul className="space-y-2 text-sm text-slate-300">
                   {(res.riskFactors || []).map((f, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-cyber-accent" />
                       <span>{f}</span>
                     </li>
                   ))}
-                  {(res.riskFactors || []).length === 0 && <li className="text-slate-500">No risk indicators found.</li>}
+                  {(res.riskFactors || []).length === 0 && <li className="text-slate-500">No warning signs found.</li>}
                 </ul>
                 {(res.campaignMatches || []).length > 0 && (
-                  <div className="mt-4 rounded-xl border border-cyber-amber/30 bg-cyber-amber/5 p-3 text-xs text-slate-300">
-                    <span className="font-bold text-cyber-amber">Repeat campaign: </span>
-                    {res.campaignMatches.length} earlier case(s) share this {res.campaignMatches[0].matchedOn === 'SAME_ORIGIN_IP' ? 'origin IP' : 'sender domain'}.
+                  <div className="mt-4 rounded-xl border border-cyber-amber/30 bg-cyber-amber/5 p-3 text-sm text-slate-300">
+                    <span className="font-bold text-cyber-amber">Seen before: </span>
+                    {res.campaignMatches.length} earlier case(s) came from the same {res.campaignMatches[0].matchedOn === 'SAME_ORIGIN_IP' ? 'IP address' : 'sender domain'}.
                   </div>
                 )}
               </Card>
 
               {res.section65bLegalSummary && (
-                <Card title="Evidence summary (Section 63 BSA)" icon={Scale}>
+                <Card title="Legal evidence summary (Section 63, BSA)" icon={Scale}>
                   <p className="whitespace-pre-line text-[11px] leading-relaxed text-slate-400">{res.section65bLegalSummary}</p>
                 </Card>
               )}

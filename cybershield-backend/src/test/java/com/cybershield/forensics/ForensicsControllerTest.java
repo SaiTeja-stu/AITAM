@@ -31,10 +31,20 @@ class ForensicsControllerTest {
     @Test
     void incidentDraftNeverClaimsExternalSubmissionOrPersistence() {
         var request = new ForensicsController.IncidentReportRequest("ab".repeat(32), "Example", "sender@example.test",
-                "SUSPICIOUS", 40, 0, 0, 0, "", "");
+                "SUSPICIOUS", 40, null, null, null, "", "");
         var body = controller.submitIncident(request).getBody();
         assertThat(body).containsEntry("status", "PREPARED_NOT_SUBMITTED")
-                .containsEntry("submittedToAuthorities", false).containsEntry("persisted", false);
+                .containsEntry("submittedToAuthorities", false).containsEntry("persisted", false)
+                .containsEntry("reporterLocationProvided", false);
         assertThat(body).doesNotContainKey("receiptToken");
+    }
+
+    @Test
+    void incidentDraftWithCoordinatesRecordsReporterGps() {
+        var request = new ForensicsController.IncidentReportRequest("ab".repeat(32), "Example", "sender@example.test",
+                "SUSPICIOUS", 40, 17.72, 83.30, 15.0f, "GPS", "Reporter notes");
+        var body = controller.submitIncident(request).getBody();
+        assertThat(body).containsEntry("reporterLocationProvided", true);
+        assertThat(body.get("jurisdictionStation").toString()).contains("Reporter GPS coordinates supplied");
     }
 }

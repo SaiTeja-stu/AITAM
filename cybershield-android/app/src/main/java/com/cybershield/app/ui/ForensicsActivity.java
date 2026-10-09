@@ -1,30 +1,31 @@
 package com.cybershield.app.ui;
 
-import android.content.ContentValues;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.cybershield.app.CyberShieldApp;
-import com.cybershield.app.data.Repository;
 import com.cybershield.app.databinding.ActivityForensicsBinding;
 import com.cybershield.app.geo.LocationHelper;
 import com.cybershield.app.net.dto.ForensicsResult;
 import com.cybershield.app.net.dto.IncidentReportResponse;
+import com.cybershield.app.net.dto.IncidentReportRequest;
+import com.cybershield.app.net.PdfStreams;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -43,6 +44,15 @@ public class ForensicsActivity extends AppCompatActivity {
 
     private ActivityForensicsBinding b;
     private ForensicsResult lastResult;
+    private String analyzedEml;
+    private String pendingPdfEml;
+    private final ExecutorService pdfWorker = Executors.newSingleThreadExecutor();
+    private final ActivityResultLauncher<String> createPdf = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("application/pdf"), uri -> {
+                if (uri != null && pendingPdfEml != null) exportPdf(uri, pendingPdfEml);
+                else b.btnDownloadPdf.setEnabled(true);
+                pendingPdfEml = null;
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +65,7 @@ public class ForensicsActivity extends AppCompatActivity {
         b.btnAnalyze.setOnClickListener(v -> runAnalysis());
         b.btnReportForensic.setOnClickListener(v -> lodgeIncident());
         b.btnDownloadPdf.setOnClickListener(v -> downloadPdf());
+        if (savedInstanceState != null) pendingPdfEml = savedInstanceState.getString("pendingPdfEml");
     }
 
     private void loadSample() {
@@ -64,41 +75,45 @@ public class ForensicsActivity extends AppCompatActivity {
                 if (resp.isSuccessful() && resp.body() != null && !resp.body().isEmpty()) {
                     b.etEml.setText(resp.body().get(0).get("content"));
                 } else {
-                    Toast.makeText(ForensicsActivity.this, "Could not load sample — is the backend reachable?", Toast.LENGTH_LONG).show();
+                    showFailure("Could not load sample", "HTTP " + resp.code());
                 }
             }
             @Override public void onFailure(retrofit2.Call<List<Map<String, String>>> call, Throwable t) {
-                Toast.makeText(ForensicsActivity.this, "Backend unreachable: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                showFailure("Could not load sample", t.getMessage());
             }
         });
     }
 
     private void runAnalysis() {
-        String eml = b.etEml.getText() == null ? "" : b.etEml.getText().toString().trim();
-        if (eml.isEmpty()) {
+        String eml = b.etEml.getText() == null ? "" : b.etEml.getText().toString();
+        if (eml.trim().isEmpty()) {
             Toast.makeText(this, "Paste a raw .eml first, or load a sample.", Toast.LENGTH_SHORT).show();
             return;
         }
         b.progress.setVisibility(View.VISIBLE);
         b.resultBox.setVisibility(View.GONE);
+        b.btnAnalyze.setEnabled(false);
+        lastResult = null;
+        analyzedEml = null;
 
         Map<String, String> body = new HashMap<>();
         body.put("rawEml", eml);
         CyberShieldApp.get().api().api().analyzeForensicsRaw(body).enqueue(new Callback<>() {
             @Override public void onResponse(Call<ForensicsResult> call, Response<ForensicsResult> resp) {
                 b.progress.setVisibility(View.GONE);
+                b.btnAnalyze.setEnabled(true);
                 if (resp.isSuccessful() && resp.body() != null) {
                     lastResult = resp.body();
+                    analyzedEml = eml;
                     render(lastResult);
                 } else {
-                    Toast.makeText(ForensicsActivity.this, "Analysis failed (HTTP " + resp.code() + ")", Toast.LENGTH_LONG).show();
+                    showFailure("Analysis failed", "HTTP " + resp.code());
                 }
             }
             @Override public void onFailure(Call<ForensicsResult> call, Throwable t) {
                 b.progress.setVisibility(View.GONE);
-                Toast.makeText(ForensicsActivity.this,
-                        "Could not reach the backend. Check Auth screen -> Server setting. (" + t.getMessage() + ")",
-                        Toast.LENGTH_LONG).show();
+                b.btnAnalyze.setEnabled(true);
+                showFailure("Analysis failed", t.getMessage());
             }
         });
     }
@@ -122,19 +137,31 @@ public class ForensicsActivity extends AppCompatActivity {
             }
         }
 
-        sb.append("\n── RELAY PATH & GEOLOCATION ──\n");
+        sb.append("\n── RELAY PATH & NETWORK GEOLOCATION ──\n");
         if (r.relayHops != null) {
             for (ForensicsResult.RelayHop hop : r.relayHops) {
                 sb.append("Hop ").append(hop.hopNumber).append(": ").append(hop.ip);
                 if (hop.geo != null) {
-                    sb.append("  →  ").append(hop.geo.city).append(", ").append(hop.geo.country)
-                            .append("  (").append(hop.geo.isp).append(')');
+                    if (hop.geo.isPrivate) {
+                        sb.append("  →  Private Network (RFC 1918 / LAN)");
+                    } else if ("DEMO_FIXTURE".equals(hop.geo.lookupStatus)) {
+                        sb.append("  →  ").append(hop.geo.city).append(", ").append(hop.geo.country)
+                                .append(" [Demo Fixture]");
+                    } else if (hop.geo.latitude != null && hop.geo.longitude != null) {
+                        sb.append("  →  ").append(hop.geo.city).append(", ").append(hop.geo.country);
+                    } else {
+                        sb.append("  →  Location unavailable");
+                    }
+                    if (hop.geo.isp != null && !hop.geo.isp.isBlank()) {
+                        sb.append("  (").append(hop.geo.isp).append(')');
+                    }
                     if (hop.geo.isTorOrProxy) sb.append("  [TOR/PROXY]");
                     if (hop.geo.isDatacenter) sb.append("  [DATACENTER]");
                 }
-                if (hop.isOriginating) sb.append("  ★ ORIGIN");
+                if (hop.isOriginating) sb.append("  ★ Earliest Relay (Unverified sender boundary)");
                 sb.append('\n');
             }
+            sb.append("Note: Relay hops describe network infrastructure and do not establish verified sender physical location.\n");
         }
 
         sb.append("\n── RISK FACTORS ──\n");
@@ -170,34 +197,50 @@ public class ForensicsActivity extends AppCompatActivity {
     private void lodgeIncident() {
         if (lastResult == null) return;
         if (!LocationHelper.hasPermission(this)) {
-            LocationHelper.requestPermission(this, RC_LOCATION);
+            new AlertDialog.Builder(this)
+                    .setTitle("Include device location?")
+                    .setMessage("Device GPS is only used to suggest your nearest regional Cyber Crime Police Station for your draft report. It will not be submitted without your explicit action.")
+                    .setPositiveButton("Continue", (d, w) -> LocationHelper.requestPermission(this, RC_LOCATION))
+                    .setNegativeButton("Skip location", (d, w) -> submitIncident(null, null, null, "SKIPPED_BY_USER"))
+                    .show();
             return;
         }
         LocationHelper.fetchCurrentLocation(this, new LocationHelper.Callback() {
-            @Override public void onLocation(double lat, double lon, float accuracyMeters, String provider) {
+            @Override public void onLocation(Double lat, Double lon, Float accuracyMeters, String provider) {
                 submitIncident(lat, lon, accuracyMeters, provider);
             }
             @Override public void onUnavailable(String reason) {
-                submitIncident(0.0, 0.0, 0f, "UNKNOWN");
+                submitIncident(null, null, null, "UNAVAILABLE: " + reason);
             }
         });
     }
 
-    private void submitIncident(double lat, double lon, float accuracyMeters, String provider) {
-        new Repository(this).reportIncident(
-                "EMAIL", lastResult.evidenceSha256, lastResult.riskTier, lastResult.overallRiskScore,
-                lat, lon, accuracyMeters, provider, new Repository.IncidentCallback() {
-                    @Override public void onLodged(IncidentReportResponse resp) {
+    private void submitIncident(Double lat, Double lon, Float accuracyMeters, String provider) {
+        if (lastResult == null) return;
+        b.btnReportForensic.setEnabled(false);
+        IncidentReportRequest request = new IncidentReportRequest(lastResult.evidenceSha256,
+                lastResult.subject, lastResult.fromAddress, lastResult.riskTier, lastResult.overallRiskScore,
+                lat, lon, accuracyMeters, provider, "Prepared from Secure Me Android email analysis");
+        CyberShieldApp.get().api().api().reportIncident(request).enqueue(new Callback<>() {
+                    @Override public void onResponse(Call<IncidentReportResponse> call, Response<IncidentReportResponse> response) {
+                        b.btnReportForensic.setEnabled(true);
+                        if (!response.isSuccessful() || response.body() == null) {
+                            showFailure("Incident preparation failed", "HTTP " + response.code());
+                            return;
+                        }
+                        IncidentReportResponse resp = response.body();
                         new AlertDialog.Builder(ForensicsActivity.this)
-                                .setTitle("Incident lodged")
-                                .setMessage("Incident ID: " + resp.incidentId
+                                .setTitle("Incident details prepared")
+                                .setMessage("Reference: " + resp.incidentId
                                         + "\nJurisdiction: " + resp.jurisdictionStation
-                                        + "\nHelpline: " + resp.helpline)
+                                        + "\nHelpline: " + resp.helpline
+                                        + "\n\nThis app has not submitted a police complaint. Save the report and submit it through the official cybercrime portal.")
                                 .setPositiveButton("OK", null)
                                 .show();
                     }
-                    @Override public void onFailed(String message) {
-                        Toast.makeText(ForensicsActivity.this, message, Toast.LENGTH_SHORT).show();
+                    @Override public void onFailure(Call<IncidentReportResponse> call, Throwable error) {
+                        b.btnReportForensic.setEnabled(true);
+                        showFailure("Incident preparation failed", error.getMessage());
                     }
                 });
     }
@@ -206,55 +249,67 @@ public class ForensicsActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_LOCATION) {
-            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            boolean granted = LocationHelper.hasPermission(this);
             if (granted) lodgeIncident();
-            else submitIncident(0.0, 0.0, 0f, "UNKNOWN");
+            else submitIncident(null, null, null, "PERMISSION_DENIED");
         }
     }
 
     private void downloadPdf() {
-        String eml = b.etEml.getText() == null ? "" : b.etEml.getText().toString().trim();
-        if (eml.isEmpty()) return;
-        Toast.makeText(this, "Generating evidence certificate…", Toast.LENGTH_SHORT).show();
+        if (analyzedEml == null) return;
+        pendingPdfEml = analyzedEml;
+        b.btnDownloadPdf.setEnabled(false);
+        createPdf.launch("secureme-forensic-report-" + System.currentTimeMillis() + ".pdf");
+    }
 
+    private void showFailure(String title, String detail) {
+        if (isFinishing() || isDestroyed()) return;
+        new AlertDialog.Builder(this).setTitle(title)
+                .setMessage((detail == null ? "The request could not be completed." : detail)
+                        + "\n\nServer: " + CyberShieldApp.get().api().store().baseUrl()
+                        + "\nCheck the connection and the Server setting on the sign-in screen. If the server is starting, retry shortly.")
+                .setPositiveButton("OK", null).show();
+    }
+
+    private void exportPdf(Uri uri, String eml) {
+        Toast.makeText(this, "Generating forensic report…", Toast.LENGTH_SHORT).show();
         Map<String, String> body = new HashMap<>();
         body.put("rawEml", eml);
-        CyberShieldApp.get().api().api().exportForensicsPdf(body).enqueue(new Callback<>() {
-            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
-                if (resp.isSuccessful() && resp.body() != null) {
-                    saveToDownloads(resp.body());
-                } else {
-                    Toast.makeText(ForensicsActivity.this, "PDF export failed (HTTP " + resp.code() + ")", Toast.LENGTH_LONG).show();
+        pdfWorker.execute(() -> {
+            String message;
+            try {
+                Response<ResponseBody> response = CyberShieldApp.get().api().api().exportForensicsPdf(body).execute();
+                if (!response.isSuccessful() || response.body() == null) {
+                    if (response.errorBody() != null) response.errorBody().close();
+                    throw new IOException("PDF export failed (HTTP " + response.code() + ")");
                 }
+                try (ResponseBody pdf = response.body();
+                     OutputStream out = getContentResolver().openOutputStream(uri, "w")) {
+                    if (out == null) throw new IOException("Could not open the selected file");
+                    PdfStreams.copy(pdf.byteStream(), out);
+                }
+                message = "Forensic report saved to the selected location.";
+            } catch (IOException | RuntimeException e) {
+                try { android.provider.DocumentsContract.deleteDocument(getContentResolver(), uri); }
+                catch (Exception ignored) { /* Provider may not support deleting partial files. */ }
+                message = "Could not save report: " + e.getMessage();
             }
-            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(ForensicsActivity.this, "Could not reach backend: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            String resultMessage = message;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                b.btnDownloadPdf.setEnabled(true);
+                Toast.makeText(this, resultMessage, Toast.LENGTH_LONG).show();
+            });
         });
     }
 
-    private void saveToDownloads(ResponseBody body) {
-        String filename = "cybershield-evidence-" + System.currentTimeMillis() + ".pdf";
-        try {
-            Uri uri;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
-                values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
-                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-            } else {
-                uri = null;
-            }
-            if (uri == null) {
-                Toast.makeText(this, "Could not create download file.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
-                if (out != null) out.write(body.bytes());
-            }
-            Toast.makeText(this, "Saved to Downloads: " + filename, Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Failed to save PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+    @Override protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putString("pendingPdfEml", pendingPdfEml);
+    }
+
+    @Override protected void onDestroy() {
+        pdfWorker.shutdown();
+        super.onDestroy();
     }
 }

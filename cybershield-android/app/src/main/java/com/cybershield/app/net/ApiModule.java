@@ -8,6 +8,7 @@ import com.cybershield.app.net.dto.TokenResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -66,7 +67,14 @@ public class ApiModule {
                 .create(CyberShieldApi.class);
 
         OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .callTimeout(120, TimeUnit.SECONDS)
                 .addInterceptor(rebase)
+                // DNS/authentication/geolocation and cold backend startup can exceed
+                // OkHttp's default 10-second read timeout for forensic reports.
+                .addInterceptor(chain -> chain.request().url().encodedPath().startsWith("/api/v1/forensics/")
+                        ? chain.withReadTimeout(90, TimeUnit.SECONDS).proceed(chain.request())
+                        : chain.proceed(chain.request()))
                 .addInterceptor(chain -> {
                     Request original = chain.request();
                     boolean isAuthPath = original.url().encodedPath().startsWith("/auth/");

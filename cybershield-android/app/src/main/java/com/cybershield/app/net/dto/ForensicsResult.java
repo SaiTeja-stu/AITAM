@@ -38,8 +38,8 @@ public class ForensicsResult {
         public String region;
         public String country;
         public String countryCode;
-        public double latitude;
-        public double longitude;
+        public Double latitude;
+        public Double longitude;
         public String asn;
         public String isp;
         public boolean isDatacenter;
@@ -47,6 +47,9 @@ public class ForensicsResult {
         public boolean isPrivate;
         public int riskScore;
         public String riskReason;
+        public String lookupStatus;
+        public String dataSource;
+        public Double accuracyRadiusKm;
     }
 
     public static class RelayHop {

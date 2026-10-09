@@ -105,7 +105,18 @@ public class ForensicPdfExporter {
                 List<String[]> hops = new ArrayList<>();
                 for (var h : r.relayHops()) {
                     var g = h.geo();
-                    String where = g == null ? "-" : nz(g.city()) + ", " + nz(g.country());
+                    String where;
+                    if (g == null) {
+                        where = "-";
+                    } else if (g.isPrivate()) {
+                        where = "Private network (RFC 1918 / LAN)";
+                    } else if ("DEMO_FIXTURE".equals(g.lookupStatus())) {
+                        where = nz(g.city()) + ", " + nz(g.country()) + " [Demo fixture]";
+                    } else if (g.latitude() == null || g.longitude() == null || "UNAVAILABLE".equals(g.lookupStatus())) {
+                        where = "Location unavailable";
+                    } else {
+                        where = nz(g.city()) + ", " + nz(g.country());
+                    }
                     String net = g == null ? "-" : nz(g.asn()) + " " + nz(g.isp());
                     hops.add(new String[]{String.valueOf(h.hopNumber()), nz(h.ip()), where, net});
                 }
@@ -117,8 +128,15 @@ public class ForensicPdfExporter {
                 var g = hop.geo();
                 String flags = (g.isTorOrProxy() ? "Tor / anonymising proxy. " : "")
                         + (g.isDatacenter() ? "Datacentre hosting. " : "");
-                p.paragraph("The earliest extracted relay IP is " + nz(hop.ip()) + ", with an approximate network location in "
-                        + nz(g.city()) + ", " + nz(g.country()) + " (" + nz(g.asn()) + ", " + nz(g.isp()) + "). "
+                String locDesc = (g.latitude() != null && g.longitude() != null)
+                        ? "in " + nz(g.city()) + ", " + nz(g.country())
+                        : "with geographic coordinates unavailable";
+                String fixtureNote = "DEMO_FIXTURE".equals(g.lookupStatus())
+                        ? "Resolved via bundled demo sample fixture. "
+                        : "";
+                p.paragraph("The earliest extracted relay IP is " + nz(hop.ip()) + ", with an approximate network location "
+                        + locDesc + " (" + nz(g.asn()) + ", " + nz(g.isp()) + "). "
+                        + fixtureNote
                         + (flags.isBlank() ? "No anonymisation flag was returned by the lookup." : "Indicators: " + flags.trim()));
             } else {
                 p.paragraph("No public originating IP address could be reconstructed from the Received headers.");

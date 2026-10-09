@@ -37,10 +37,10 @@ public class ForensicsController {
             String subject,
             String sender,
             String riskTier,
-            int riskScore,
-            double userLat,
-            double userLon,
-            float accuracyMeters,
+            Integer riskScore,
+            Double userLat,
+            Double userLon,
+            Float accuracyMeters,
             String networkProvider,
             String reporterNotes
     ) {}
@@ -142,7 +142,20 @@ public class ForensicsController {
         resp.put("status", "PREPARED_NOT_SUBMITTED");
         resp.put("evidenceSha256", req.evidenceSha256());
         resp.put("timestamp", Instant.now().toString());
-        resp.put("jurisdictionStation", "Not assigned - submit through the official reporting channel");
+
+        boolean hasReporterGps = req.userLat() != null && req.userLon() != null
+                && !(Math.abs(req.userLat()) < 0.0001 && Math.abs(req.userLon()) < 0.0001);
+        String jurisdictionStation = hasReporterGps
+                ? String.format(Locale.ROOT, "Reporter GPS coordinates supplied (%.4f, %.4f ± %s). File with local State Cyber Crime Police Station.",
+                        req.userLat(), req.userLon(), req.accuracyMeters() != null ? Math.round(req.accuracyMeters()) + "m" : "unknown")
+                : "Not assigned (Device GPS was not provided or permission was denied) - submit through the official reporting channel";
+
+        resp.put("reporterLocationProvided", hasReporterGps);
+        if (hasReporterGps) {
+            resp.put("reporterCoordinates", Map.of("lat", req.userLat(), "lon", req.userLon(),
+                    "accuracyMeters", req.accuracyMeters() != null ? req.accuracyMeters() : 0.0f));
+        }
+        resp.put("jurisdictionStation", jurisdictionStation);
         resp.put("submittedToAuthorities", false);
         resp.put("persisted", false);
         resp.put("message", "Draft reference only. No complaint was lodged or stored, and no police receipt was issued.");

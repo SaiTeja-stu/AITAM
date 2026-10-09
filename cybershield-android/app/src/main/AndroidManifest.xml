@@ -69,7 +69,7 @@
         <activity android:name=".ui.ReportsActivity" android:exported="false" />
         <activity android:name=".ui.EducationListActivity" android:exported="false" />
         <activity android:name=".ui.OverviewActivity" android:exported="false" />
-        <activity android:name=".ui.ForensicsActivity" android:exported="false" />
+        <activity android:name=".ui.ForensicsActivity" android:exported="true" />
         <activity
             android:name=".ui.ProceedGateActivity"
             android:exported="false"
