@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * Renders the digital-evidence report as a formal, printable PDF: letterhead with the Secure Me
- * logo, numbered sections, ruled tables, a certification block with signature lines, and
+ * logo, numbered sections, ruled tables, an unsigned reviewer block, and
  * "Page x of y" footers. Serif type and thin rules follow the look of regulatory / journal documents.
  */
 @Service
@@ -52,7 +52,13 @@ public class ForensicPdfExporter {
             Instant when = r.analyzedAt() == null ? Instant.now() : r.analyzedAt();
 
             p.letterhead(reportNo, TS.format(when));
-            p.title("DIGITAL FORENSIC EVIDENCE REPORT", "Email Threat Analysis and Origin Trace");
+            p.title("CYBER INCIDENT EXAMINATION REPORT", "Email Evidence Analysis | Unsigned Technical Report");
+            p.paragraph("Prepared by Secure Me for investigative review. This is an automated technical report, "
+                    + "not a government-issued document, police complaint receipt or statutory certificate.");
+            p.keyValues(List.of(
+                    new String[]{"Case / complaint reference", "Not provided - complete during review"},
+                    new String[]{"Examining organisation", "Secure Me automated analysis service"},
+                    new String[]{"Report status", "UNSIGNED - reviewer verification required"}));
 
             // 1 ---------------------------------------------------------------
             p.section("1.", "Summary of Findings");
@@ -111,12 +117,14 @@ public class ForensicPdfExporter {
                 var g = hop.geo();
                 String flags = (g.isTorOrProxy() ? "Tor / anonymising proxy. " : "")
                         + (g.isDatacenter() ? "Datacentre hosting. " : "");
-                p.paragraph("The message appears to have originated from " + nz(hop.ip()) + ", located in "
+                p.paragraph("The earliest extracted relay IP is " + nz(hop.ip()) + ", with an approximate network location in "
                         + nz(g.city()) + ", " + nz(g.country()) + " (" + nz(g.asn()) + ", " + nz(g.isp()) + "). "
-                        + (flags.isBlank() ? "No anonymisation indicators were found." : "Indicators: " + flags.trim()));
+                        + (flags.isBlank() ? "No anonymisation flag was returned by the lookup." : "Indicators: " + flags.trim()));
             } else {
                 p.paragraph("No public originating IP address could be reconstructed from the Received headers.");
             }
+            p.paragraph("Relay headers may be forged outside a trusted mail-provider boundary. IP geolocation describes "
+                    + "network infrastructure and does not establish the sender's identity or physical location.");
 
             // 5 ---------------------------------------------------------------
             p.section("5.", "Risk Indicators Identified");
@@ -133,7 +141,8 @@ public class ForensicPdfExporter {
             // 6 ---------------------------------------------------------------
             p.section("6.", "Attachments");
             if (r.attachments() == null || r.attachments().isEmpty()) {
-                p.paragraph("The message carried no attachments.");
+                p.paragraph("No separately supplied attachments were examined. Embedded MIME attachments are not "
+                        + "automatically extracted by this analysis path; this does not establish their absence.");
             } else {
                 List<String[]> att = new ArrayList<>();
                 for (var a : r.attachments()) {
@@ -146,7 +155,8 @@ public class ForensicPdfExporter {
             p.section("7.", "Campaign Correlation");
             List<EmailForensicsService.CampaignMatch> matches = r.campaignMatches();
             if (matches == null || matches.isEmpty()) {
-                p.paragraph("No earlier incident from the same sender domain or origin IP address was found in the case history.");
+                p.paragraph("No matching entries were returned from the available local case history. This is not an "
+                        + "exhaustive search of external incident databases.");
             } else {
                 List<String[]> rows = new ArrayList<>();
                 for (var m : matches) {
@@ -158,20 +168,28 @@ public class ForensicPdfExporter {
 
             // 8 ---------------------------------------------------------------
             p.section("8.", "Method and Limitations");
-            p.paragraph("The evidence fingerprint is a SHA-256 hash of the submitted message text, so any later change "
-                    + "to the message can be detected. Findings come from automated analysis of message headers and "
+            p.paragraph("The evidence fingerprint is a SHA-256 hash of the submitted message text encoded as UTF-8, "
+                    + "before line-ending normalization. It is not a hash of an original file unless its bytes match "
+                    + "that encoding. Findings come from automated analysis of message headers and "
                     + "content and from public IP-geolocation data. They are investigative leads and should be "
                     + "corroborated with the mail provider's own logs before any legal action.");
+            p.paragraph("The risk index is a heuristic score, not a probability of guilt or malware confirmation. "
+                    + "Header authentication assertions require validation against trusted provider records. "
+                    + "A hash alone does not prove authorship, acquisition history or chain of custody. "
+                    + "Characters unsupported by the report font are shown as [U+XXXX] to preserve their identity.");
 
             // 9 ---------------------------------------------------------------
-            p.section("9.", "Certification");
-            p.paragraph("Certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (which replaced "
-                    + "Section 65B of the Indian Evidence Act, 1872), for an electronic record.");
-            p.paragraph("I certify that: (a) the electronic record described in this report was produced by the Secure Me "
-                    + "analysis system while it was in regular use and operating properly; (b) the SHA-256 fingerprint "
-                    + "in Section 2 was computed from the submitted message at the time of analysis and the message was "
-                    + "not altered afterwards; and (c) the information in this report is true and correct to the best "
-                    + "of my knowledge and belief.");
+            p.section("9.", "Evidence Handling and Recommended Follow-up");
+            p.numbered(List.of("Preserve the original email file and attachments in read-only storage; record acquisition "
+                            + "source, time, examiner and an independent file hash.",
+                    "Record every evidence transfer and access in a separate chain-of-custody register.",
+                    "Corroborate suspicious relay, authentication and payment details with authorised provider records.",
+                    "Submit any complaint through the appropriate official channel. This report does not submit a complaint."));
+            p.room(225);
+            p.section("10.", "Examiner Review and Acknowledgement");
+            p.paragraph("To be completed by the responsible reviewer after checking the source evidence and findings. "
+                    + "No signature, digital signing operation, legal admissibility determination or statutory "
+                    + "certification is supplied by the application.");
             p.signatures();
 
             p.finish(reportNo, hash);
@@ -206,16 +224,14 @@ public class ForensicPdfExporter {
         return s == null ? "" : s;
     }
 
-    /** Keeps only characters the standard Times font can encode (WinAnsi). */
+    /** Preserve unsupported code points explicitly instead of silently losing forensic text. */
     static String clean(String s) {
         if (s == null) return "";
         StringBuilder b = new StringBuilder(s.length());
-        for (char c : s.toCharArray()) {
+        for (int c : s.codePoints().toArray()) {
             if (c == '\n' || c == '\r' || c == '\t') b.append(' ');
-            else if ((c >= 0x20 && c <= 0x7E) || (c >= 0xA0 && c <= 0xFF)) b.append(c);
-            else if (c == '–' || c == '—' || c == '‘' || c == '’' || c == '“'
-                    || c == '”' || c == '•' || c == '…') b.append(c);
-            else b.append('?');
+            else if (c >= 0x20 && c <= 0x7E) b.append((char) c);
+            else b.append(String.format("[U+%04X]", c));
         }
         return b.toString();
     }
@@ -279,8 +295,13 @@ public class ForensicPdfExporter {
                 for (String word : para.trim().split(" ")) {
                     if (word.isEmpty()) continue;
                     while (width(word, f, size) > maxW) { // hard-break very long tokens (hashes, URLs)
-                        int n = word.length();
-                        while (n > 1 && width(word.substring(0, n), f, size) > maxW) n--;
+                        int low = 1, high = word.length();
+                        while (low < high) {
+                            int mid = (low + high + 1) / 2;
+                            if (width(word.substring(0, mid), f, size) <= maxW) low = mid;
+                            else high = mid - 1;
+                        }
+                        int n = low;
                         if (cur.length() > 0) { lines.add(cur.toString()); cur.setLength(0); }
                         lines.add(word.substring(0, n));
                         word = word.substring(n);
@@ -308,11 +329,11 @@ public class ForensicPdfExporter {
             y = top - 14;
             text("SECURE ME", SERIF_B, 20, tx, BRAND);
             y -= 15;
-            text("Protection from scam messages, fake websites and cyber-fraud", SERIF_I, 9.5f, tx, GREY);
+            text("Digital Evidence Examination", SERIF_I, 10, tx, GREY);
             y -= 12;
-            text("Cyber Shield Investigation Console  |  Digital Forensics", SERIF, 9.5f, tx, GREY);
+            text("Automated analysis service", SERIF, 9.5f, tx, GREY);
 
-            String[][] right = {{"Report No.", reportNo}, {"Date", date}, {"Classification", "CONFIDENTIAL"}};
+            String[][] right = {{"Ref.", reportNo}, {"Date", date}, {"Handling", "RESTRICTED / UNSIGNED"}};
             float ry = top - 10;
             for (String[] kv : right) {
                 String line = kv[0] + ": " + kv[1];
@@ -338,7 +359,7 @@ public class ForensicPdfExporter {
         }
 
         void section(String no, String title) throws IOException {
-            room(46);
+            room(80);
             y -= 6;
             text(no + "  " + title, SERIF_B, 11.5f, ML, INK);
             y -= 4;
@@ -356,7 +377,7 @@ public class ForensicPdfExporter {
         }
 
         void bullets(List<String> items) throws IOException {
-            for (String it : items) listItem("•", it);
+            for (String it : items) listItem("-", it);
             y -= 4;
         }
 
@@ -378,76 +399,80 @@ public class ForensicPdfExporter {
             }
         }
 
-        /** Two-column label / value list with thin dividers. */
+        /** Every cell, including labels and long evidence identifiers, wraps within its column. */
         void keyValues(List<String[]> rows) throws IOException {
-            float lw = CW * 0.30f, vw = CW - lw - 8;
-            hline(ML, PAGE.getWidth() - MR, y + 9, 0.5f, RULE);
-            for (String[] kv : rows) {
-                List<String> v = wrap(nz(kv[1]).isBlank() ? "-" : kv[1], SERIF, 10, vw);
-                float h = v.size() * 13 + 6;
-                room(h);
-                text(kv[0], SERIF_B, 10, ML, INK);
-                float yy = y;
-                for (String line : v) {
-                    text(line, SERIF, 10, ML + lw + 8, INK);
-                    y -= 13;
-                }
-                y -= 3;
-                hline(ML, PAGE.getWidth() - MR, y + 9, 0.4f, RULE);
-                y = Math.min(y, yy - 13);
-                y -= 0;
-            }
-            y -= 8;
+            table(new String[]{"Field", "Recorded value"}, new float[]{0.30f, 0.70f}, rows, -1);
         }
 
-        /** Ruled table: heavy rules top and bottom, thin rules between rows. */
+        private void tableHeader(String[] head, float[] widths, float[] positions) throws IOException {
+            room(44);
+            hline(ML, PAGE.getWidth() - MR, y + 10, 1f, INK);
+            int lines = 1;
+            for (int i = 0; i < head.length; i++) {
+                List<String> wrapped = wrap(head[i], SERIF_B, 10, widths[i] - 8);
+                lines = Math.max(lines, wrapped.size());
+                float yy = y;
+                for (String line : wrapped) {
+                    text(line, SERIF_B, 10, positions[i], INK);
+                    y -= 12;
+                }
+                y = yy;
+            }
+            y -= lines * 12;
+            hline(ML, PAGE.getWidth() - MR, y + 5, 0.6f, INK);
+            y -= 9;
+        }
+
+        /** Split oversized rows across pages and repeat column headings on every continuation. */
         void table(String[] head, float[] frac, List<String[]> rows, int highlightRow) throws IOException {
-            float[] w = new float[frac.length], x = new float[frac.length];
+            float[] widths = new float[frac.length], positions = new float[frac.length];
             float acc = ML;
             for (int i = 0; i < frac.length; i++) {
-                w[i] = CW * frac[i];
-                x[i] = acc + 4;
-                acc += w[i];
+                widths[i] = CW * frac[i];
+                positions[i] = acc + 4;
+                acc += widths[i];
             }
-            room(40);
-            hline(ML, PAGE.getWidth() - MR, y + 10, 1f, INK);
-            for (int i = 0; i < head.length; i++) text(head[i], SERIF_B, 10, x[i], INK);
-            y -= 5;
-            hline(ML, PAGE.getWidth() - MR, y + 1, 0.6f, INK);
-            y -= 12;
+            tableHeader(head, widths, positions);
             int rowNo = 0;
             for (String[] row : rows) {
                 List<List<String>> cells = new ArrayList<>();
                 int maxLines = 1;
                 for (int i = 0; i < head.length; i++) {
-                    List<String> l = wrap(i < row.length ? row[i] : "", SERIF, 9.5f, w[i] - 8);
-                    cells.add(l);
-                    maxLines = Math.max(maxLines, l.size());
+                    List<String> lines = wrap(i < row.length ? row[i] : "", SERIF, 9.5f, widths[i] - 8);
+                    cells.add(lines);
+                    maxLines = Math.max(maxLines, lines.size());
                 }
-                float h = maxLines * 12 + 4;
-                room(h + 6);
-                boolean hot = rowNo == highlightRow;
-                for (int i = 0; i < head.length; i++) {
-                    float yy = y;
-                    for (String line : cells.get(i)) {
-                        text(line, hot && i == 1 ? SERIF_B : SERIF, 9.5f, x[i], hot && i == 1 ? ALERT : INK);
-                        y -= 12;
+                float rowHeight = maxLines * 12 + 8;
+                if (rowHeight < PAGE.getHeight() - MT - MB - 55 && y - rowHeight < MB) {
+                    newPage(false);
+                    tableHeader(head, widths, positions);
+                }
+                for (int line = 0; line < maxLines; line++) {
+                    if (y - 18 < MB) {
+                        newPage(false);
+                        tableHeader(head, widths, positions);
                     }
-                    y = yy;
+                    for (int col = 0; col < head.length; col++) {
+                        if (line < cells.get(col).size()) {
+                            boolean hot = rowNo == highlightRow && col == 1;
+                            text(cells.get(col).get(line), hot ? SERIF_B : SERIF, 9.5f,
+                                    positions[col], hot ? ALERT : INK);
+                        }
+                    }
+                    y -= 12;
                 }
-                y -= h - 2;
-                hline(ML, PAGE.getWidth() - MR, y + 8, 0.3f, RULE);
+                y -= 4;
+                hline(ML, PAGE.getWidth() - MR, y + 7, 0.3f, RULE);
                 rowNo++;
             }
-            hline(ML, PAGE.getWidth() - MR, y + 8, 1f, INK);
+            hline(ML, PAGE.getWidth() - MR, y + 7, 1f, INK);
             y -= 12;
         }
-
         void signatures() throws IOException {
-            room(120);
+            room(140);
             y -= 10;
             float half = CW / 2 - 12;
-            String[] cols = {"Prepared by (Investigating Officer)", "Person in charge of the computer resource"};
+            String[] cols = {"Reviewed by (name and role)", "Evidence custodian"};
             float startY = y;
             for (int c = 0; c < 2; c++) {
                 float x = ML + c * (half + 24);

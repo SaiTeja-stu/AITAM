@@ -90,7 +90,7 @@ public class ForensicsController {
     }
 
     /**
-     * Analyze raw EML and return a signed Section 65B forensic evidence certificate as a PDF.
+     * Analyze raw EML and return an unsigned technical examination report as a PDF.
      */
     @PostMapping(value = "/export-pdf", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/pdf")
     public ResponseEntity<byte[]> exportPdf(@RequestBody RawAnalyzeRequest request) {
@@ -100,6 +100,8 @@ public class ForensicsController {
         EmailForensicsService.ForensicAnalysisResult result = forensicsService.analyzeEmail(request.rawEml(), List.of());
         byte[] pdf = pdfExporter.export(result);
         return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .header("X-Content-Type-Options", "nosniff")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"forensic-evidence-"
                         + result.evidenceSha256().substring(0, 12) + ".pdf\"")
                 .contentType(MediaType.valueOf("application/pdf"))
@@ -128,29 +130,23 @@ public class ForensicsController {
     }
 
     /**
-     * Submit verified incident from mobile APK with GPS coordinates and cyber-cell dispatch.
+     * Prepare an incident reference. No external authority submission or storage is performed.
      */
     @PostMapping(value = "/incident-report", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> submitIncident(@RequestBody IncidentReportRequest req) {
-        String incidentId = "INC-SIH-" + System.currentTimeMillis();
-
-        // Determine regional Cyber Crime Police Station jurisdiction based on GPS
-        String nearestStation = "State Cyber Crime Police Station (Jurisdiction Assigned)";
-        if (req.userLat() > 17.0 && req.userLat() < 19.0 && req.userLon() > 82.0 && req.userLon() < 84.5) {
-            nearestStation = "Visakhapatnam Cyber Crime Police Station (AP Cyber Police)";
-        } else if (req.userLat() > 28.0 && req.userLat() < 29.0 && req.userLon() > 76.5 && req.userLon() < 77.5) {
-            nearestStation = "Special Cell Cyber Crime Unit, Mandir Marg, New Delhi";
+        if (req == null || req.evidenceSha256() == null || !req.evidenceSha256().matches("[a-fA-F0-9]{64}")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "A valid SHA-256 evidence hash is required."));
         }
-
         Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("incidentId", incidentId);
-        resp.put("status", "LODGED_IN_NATIONAL_CYBER_PORTAL");
+        resp.put("incidentId", "DRAFT-" + UUID.randomUUID());
+        resp.put("status", "PREPARED_NOT_SUBMITTED");
         resp.put("evidenceSha256", req.evidenceSha256());
         resp.put("timestamp", Instant.now().toString());
-        resp.put("jurisdictionStation", nearestStation);
+        resp.put("jurisdictionStation", "Not assigned - submit through the official reporting channel");
+        resp.put("submittedToAuthorities", false);
+        resp.put("persisted", false);
+        resp.put("message", "Draft reference only. No complaint was lodged or stored, and no police receipt was issued.");
         resp.put("helpline", "1930 / cybercrime.gov.in");
-        resp.put("receiptToken", UUID.randomUUID().toString());
-
         return ResponseEntity.ok(resp);
     }
 }

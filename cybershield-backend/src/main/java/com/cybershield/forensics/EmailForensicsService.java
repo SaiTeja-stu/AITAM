@@ -112,7 +112,7 @@ public class EmailForensicsService {
 
     public ForensicAnalysisResult analyzeEmail(String rawEml, List<AttachmentInput> uploadedAttachments) {
         String cleanEml = rawEml == null ? "" : rawEml.replace("\r\n", "\n").replace("\r", "\n");
-        String evidenceHash = computeSha256(cleanEml.getBytes(StandardCharsets.UTF_8));
+        String evidenceHash = computeSha256((rawEml == null ? "" : rawEml).getBytes(StandardCharsets.UTF_8));
 
         // 1. Unfold & Split RFC 5322 Headers vs Body
         int blankLineIdx = findBlankLine(cleanEml);
@@ -130,8 +130,8 @@ public class EmailForensicsService {
         String replyTo = extractEmailAddress(getFirst(headers, "reply-to", "")).toLowerCase(Locale.ROOT);
         String returnPath = extractDomain(extractEmailAddress(getFirst(headers, "return-path", "")));
         String subject = getFirst(headers, "subject", "(No Subject)");
-        String date = getFirst(headers, "date", Instant.now().toString());
-        String messageId = getFirst(headers, "message-id", UUID.randomUUID().toString());
+        String date = getFirst(headers, "date", "Not present in submitted headers");
+        String messageId = getFirst(headers, "message-id", "Not present in submitted headers");
 
         // 3. Reconstruct Hop-by-Hop Relay Path (Reversing Received Headers)
         List<String> receivedHeaders = headers.getOrDefault("received", List.of());
@@ -644,17 +644,20 @@ public class EmailForensicsService {
 
     private String generateSection65BSummary(String hash, String msgId, String from, String subject,
                                              RelayHop origin, int score, String tier) {
-        String originLocation = origin != null ? origin.geo().city() + ", " + origin.geo().country() + " (" + origin.ip() + ")" : "Unknown Network";
-        return "DIGITAL FORENSIC EVIDENCE CERTIFICATE (INDIAN EVIDENCE ACT / BHARATIYA SAKSHYA ADHINIYAM)\n" +
+        String originLocation = origin != null && origin.geo() != null ? origin.geo().city() + ", " + origin.geo().country() + " (" + origin.ip() + ")" : "Unknown Network";
+        return "CYBER INCIDENT EXAMINATION REPORT - UNSIGNED TECHNICAL SUMMARY\n" +
                 "-----------------------------------------------------------------------------------------\n" +
                 "Evidence Fingerprint (SHA-256) : " + hash + "\n" +
                 "Internet Message-ID            : " + msgId + "\n" +
                 "Declared Sender                : " + from + "\n" +
                 "Subject Line                   : " + subject + "\n" +
-                "Originating Transit Node       : " + originLocation + "\n" +
+                "Earliest Extracted Relay       : " + originLocation + " (approximate network location)\n" +
                 "Evaluated Threat Tier          : " + tier + " (Forensic Risk Index: " + score + "/100)\n" +
-                "Timestamp of Forensic Custody  : " + Instant.now() + "\n" +
-                "Integrity Guarantee            : Bitstream preserved with zero payload alteration. Admissible for LEA filing.";
+                "Analysis Generated At (UTC)    : " + Instant.now() + "\n" +
+                "Hash Scope                     : Submitted text encoded as UTF-8 before line-ending normalization.\n" +
+                "Review Status                  : Automated findings require independent examiner review.\n" +
+                "Limitations                    : Not a government-issued report, statutory certificate or complaint receipt. " +
+                "No chain of custody or legal admissibility is certified. Relay locations do not identify the sender's physical location.";
     }
 
     // --- Helpers ---
